@@ -19,36 +19,58 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.composable
 
 class MainActivity : ComponentActivity() {
+    // Con 'by lazy', estas herramientas NO se crean al abrir la app.
+    // Solo se crean en el momento exacto en que alguien las llama.
+    // 1. Inicialización de dependencias
+    private val analyzer by lazy { VicioAnalyzer(this) }
+    private val provider by lazy { UsageProvider(this) }
+    private val history by lazy { HistorialManager(this) }
+
+    // 2. Creamos el Repositorio
+    private val repository by lazy { VicioRepository(analyzer, provider, history) }
+    // 3. Creamos el ViewModel
+    private val viewModel by lazy { HomeViewModel(repository) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Inicialización manual de dependencias
-        val analyzer = VicioAnalyzer(context = this)
-        val provider = UsageProvider(context = this)
-        val history = HistorialManager(context = this)
-
-        // 2. Creamos el Repositorio
-        val repository = VicioRepository(analyzer, provider, history)
-
-        // 3. Creamos el ViewModel
-        val viewModel = HomeViewModel(repository)
-
         setContent {
             DopaminaMinimalistTheme {
-                // VERIFICACIÓN DE PERMISO EN TIEMPO REAL
-                if (hasUsageStatsPermission()) {
-                    // Si tiene permiso, mostramos la app normal
-                    HomeScreen(viewModel = viewModel)
-                } else {
-                    // Si NO tiene permiso, mostramos pantalla de solicitud
-                    PermissionScreen {
-                        startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                // 1. Creamos el controlador de navegación
+                val navController = androidx.navigation.compose.rememberNavController()
+
+                // 2. Definimos el mapa de pantallas (NavHost)
+                androidx.navigation.compose.NavHost(
+                    navController = navController,
+                    startDestination = "onboarding_screen" // Aquí arranca la app
+                ) {
+
+                    // PANTALLA A: Las políticas de privacidad
+                    composable("onboarding_screen") {
+                        // Asegúrate de que importe tu OnBoardingScreen nuevo
+                        com.protas.dopaminaminimalist.avisos_privacidad.OnBoardingScreen(navController)
+                    }
+
+                    // PANTALLA B: Tu flujo original (Permisos y Gráficas)
+                    composable("main_flow") {
+                        if (hasUsageStatsPermission()) {
+                            // Si ya dio permiso en el sistema, va a la app
+                            HomeScreen(viewModel = viewModel)
+                        } else {
+                            // Si no, le pide el permiso de uso de apps
+                            PermissionScreen {
+                                startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                            }
+                        }
                     }
                 }
             }
         }
+
+
     }
 
     // Función mágica para saber si tienes permiso

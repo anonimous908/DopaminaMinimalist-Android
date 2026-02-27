@@ -59,6 +59,7 @@ dependencies {
     // implementation("com.google.ai.edge.litert:litert-select-tf-ops:1.4.1")
     // ¡CRÍTICO! Tu modelo usa GRU/LSTM, necesitas esta librería para las "Select Ops":
 
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -74,6 +75,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Navegación entre pantallas
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    // Memoria local para guardar que ya aceptó las políticas
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
 }
 
 

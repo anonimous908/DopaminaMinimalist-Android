@@ -34,7 +34,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
             LargeTopAppBar(
                 title = {
                     Text(
-                        text = "Desviciador 3000",
+                        text = "enfocaApp",
                         fontWeight = FontWeight.Bold
                     )
                 }
