@@ -144,6 +144,7 @@ class VicioMonitorService : Service() {
                 p.contains("twitch")
     }
 
+
     private fun obtenerNombreBonito(pkg: String): String {
         return when {
             pkg.contains("tiktok") -> "TikTok"
@@ -190,4 +191,6 @@ class VicioMonitorService : Service() {
         )
         return mode == android.app.AppOpsManager.MODE_ALLOWED
     }
+
+
 }
