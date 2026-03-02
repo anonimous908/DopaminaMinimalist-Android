@@ -1,5 +1,4 @@
-package com.protas.dopaminaminimalist.presentation
-
+package com.protas.dopaminaminimalist.ui.SettingsScreen
 
 
 import androidx.compose.foundation.background
@@ -17,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 
 // Modelo de datos para tus interruptores
 data class DefenseOption(
@@ -27,8 +27,9 @@ data class DefenseOption(
     var isEnabled: Boolean = false
 )
 
+@OptIn(ExperimentalMaterial3Api::class) // Necesario para LargeTopAppBar
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(viewModel: HomeViewModel) {
     // ESTADO: Aquí guardamos si los switches están activos
     // (En producción usarías DataStore o ViewModel)
     val options = remember { mutableStateListOf(
