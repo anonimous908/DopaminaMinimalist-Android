@@ -16,6 +16,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.protas.dopaminaminimalist.MainActivity
 import com.protas.dopaminaminimalist.R
+import com.protas.dopaminaminimalist.presentation.BarrierActivity
 // import com.protas.dopaminaminimalist.presentation.BarrierActivity // Descomenta cuando tengas la BarrierActivity
 import java.util.TreeMap
 
@@ -105,13 +106,13 @@ class VicioMonitorService : Service() {
         }
 
         // REGLA 2: ACTIVAR BARRERA (Opcional, descomentar cuando tengas la Activity)
-        /*
+
         if (minutos > 30) { // Si lleva más de 30 min, bloqueo duro
              val intent = Intent(this, BarrierActivity::class.java)
              intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
              startActivity(intent)
         }
-        */
+
     }
 
     private fun lanzarAlerta(pkgName: String, minutos: Long) {

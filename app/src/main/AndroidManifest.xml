@@ -37,6 +37,14 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".presentation.BarrierActivity"
+            android:theme="@style/Theme.DopaminaMinimalist"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity="" />
+
+
         <service
             android:name=".data.services.VicioMonitorService"
             android:enabled="true"
