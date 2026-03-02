@@ -118,11 +118,15 @@ fun MainPagerContainer(viewModel: HomeViewModel) {
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
 
     // El Pager permite el deslizamiento horizontal
-    HorizontalPager(state = pagerState) { page ->
-        when (page) {
-            0 -> StatsPlaceholder() // Pantalla de la izquierda
-            1 -> HomeScreen(viewModel = viewModel) // Pantalla central
-            2 -> SettingsScreen() // Pantalla de la derecha
+    HorizontalPager(
+            state = pagerState,
+            beyondViewportPageCount = 1 // <--- ESTO: Mantiene las páginas de los lados listas en memoria
+                    ) { page ->
+                    when (page) {
+                    0 -> StatsPlaceholder() // Pantalla de la izquierda
+                    1 -> HomeScreen(viewModel = viewModel) // Pantalla central
+                    2 -> SettingsScreen() // Pantalla de la derecha
+
         }
     }
 }
