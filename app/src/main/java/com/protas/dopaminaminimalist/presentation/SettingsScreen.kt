@@ -35,9 +35,7 @@ fun SettingsScreen() {
         DefenseOption("notify", "👁️ Vigilancia Activa", "Notificar cada 5 min de uso", Icons.Default.Notifications),
         DefenseOption("barrier", "🚧 Barrera de 10s", "Mantener pulsado para entrar", Icons.Default.Lock),
         DefenseOption("grayscale", "🌑 Modo Grises", "Hacer la pantalla aburrida", Icons.Default.BrightnessMedium),
-        DefenseOption("sound", "🔊 Sonido de Vergüenza", "Alarma si excedes 15 min", Icons.Default.VolumeUp),
         DefenseOption("monk", "🧘 Modo Monje", "Bloqueo total sin piedad", Icons.Default.SelfImprovement),
-        DefenseOption("flash", "💡 Flash de Conciencia", "Parpadear LED al entrar", Icons.Default.FlashOn),
         DefenseOption("aggressive", "💬 IA Pasivo-Agresiva", "Mensajes que duelen", Icons.Default.Psychology),
         DefenseOption("stats", "📊 HUD en Pantalla", "Ver contador flotante", Icons.Default.Analytics),
         DefenseOption("night", "🌙 Toque de Queda", "Bloqueo automático 11 PM", Icons.Default.Nightlight),
@@ -51,7 +49,7 @@ fun SettingsScreen() {
             .padding(16.dp)
     ) {
         Text(
-            text = "Protocolos de Defensa",
+            text = "Sistema De Guerra A La Dopamina Barata",
             color = Color.White,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,

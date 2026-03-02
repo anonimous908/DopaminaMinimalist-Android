@@ -15,11 +15,21 @@ import android.content.Context
 import android.content.Intent
 import android.os.Process
 import android.provider.Settings
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.composable
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import com.protas.dopaminaminimalist.presentation.SettingsScreen
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     // Con 'by lazy', estas herramientas NO se crean al abrir la app.
@@ -58,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     composable("main_flow") {
                         if (hasUsageStatsPermission()) {
                             // Si ya dio permiso en el sistema, va a la app
-                            HomeScreen(viewModel = viewModel)
+                            MainPagerContainer(viewModel = viewModel)
                         } else {
                             // Si no, le pide el permiso de uso de apps
                             PermissionScreen {
@@ -99,5 +109,30 @@ fun PermissionScreen(onGrantClick: () -> Unit) {
                 androidx.compose.material3.Text("Conceder Permiso")
             }
         }
+    }
+}
+
+@Composable
+fun MainPagerContainer(viewModel: HomeViewModel) {
+    // Definimos 3 páginas: 0 (Stats), 1 (Home), 2 (Settings)
+    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
+
+    // El Pager permite el deslizamiento horizontal
+    HorizontalPager(state = pagerState) { page ->
+        when (page) {
+            0 -> StatsPlaceholder() // Pantalla de la izquierda
+            1 -> HomeScreen(viewModel = viewModel) // Pantalla central
+            2 -> SettingsScreen() // Pantalla de la derecha
+        }
+    }
+}
+
+@Composable
+fun StatsPlaceholder() {
+    Box(
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        Text("📊 Historial Detallado (Próximamente)", style = MaterialTheme.typography.headlineMedium)
     }
 }
