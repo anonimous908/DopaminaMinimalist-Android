@@ -2,19 +2,46 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- ===== PERMISOS ===== -->
+
+    <!-- Ver estadísticas de uso de otras apps (necesario para monitorear tiempo de pantalla) -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
+
+    <!-- Mostrar notificaciones (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Dibujar sobre otras apps (para mostrar la pantalla barrera cuando se excede el límite) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Mantener un servicio corriendo en primer plano con notificación visible -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
         tools:ignore="ForegroundServicesPolicy" />
+
+    <!-- Tipo especial de foreground service (uso personalizado/digital wellbeing) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- Iniciar automáticamente cuando el dispositivo se reinicia -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Evitar que Android mate el servicio para ahorrar batería -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!-- Escuchar notificaciones de otras apps (para detectar llamadas, etc.) -->
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
         tools:ignore="ProtectedPermissions" />
 
+
+    <!-- ===== CONFIGURACIÓN DE LA APPLICATION ===== -->
+    <!-- Permite respaldo de datos -->
+    <!-- Reglas de extracción de datos -->
+    <!-- Qué archivos se respaldan -->
+    <!-- Ícono de la app -->
+    <!-- Nombre visible de la app -->
+    <!-- Ícono redondo (launchers modernos) -->
+    <!-- Soporte para idiomas de derecha a izquierda -->
+    <!-- Sobreescribe allowBackup si hay conflicto con dependencias -->
+    <!-- Tema visual global de la app -->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -26,44 +53,61 @@
         tools:replace="android:allowBackup"
         android:theme="@style/Theme.DopaminaMinimalist">
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.DopaminaMinimalist">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
-        <activity
-            android:name=".presentation.BarrierActivity"
-            android:theme="@style/Theme.DopaminaMinimalist"
-            android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:taskAffinity="" />
+    <!-- ===== ACTIVIDADES ===== -->
+    <!-- Pantalla principal, punto de entrada al abrir la app -->
+    <!-- android:exported="true" no mover, ya que este permite que
+    Puede ser abierta desde fuera de la app (necesario para launcher) -->
+    <activity
+        android:name=".MainActivity"
+        android:exported="true"
+        android:theme="@style/Theme.DopaminaMinimalist">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+    </activity>
 
 
-        <service
-            android:name=".data.services.VicioMonitorService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Digital Wellbeing and App Usage Monitoring"/>
-        </service>
+    <!-- Pantalla barrera: se muestra encima de apps bloqueadas cuando se supera el límite de uso -->
+    <!-- No aparece en el historial de apps recientes -->
+    <!-- Solo puede existir una instancia a la vez -->
+    <!-- No pertenece a ninguna tarea/stack de actividades -->
+    <activity
+        android:name=".presentation.BarrierActivity"
+        android:theme="@style/Theme.DopaminaMinimalist"
+        android:excludeFromRecents="true"
+        android:launchMode="singleInstance"
+        android:taskAffinity=""
+        />
 
-        <service
-            android:name=".data.services.CallNotificationListener"
-            android:label="@string/app_name"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
+
+    <!-- ===== SERVICIOS ===== -->
+    <!-- Servicio principal que corre en segundo plano monitoreando el uso de apps -->
+    <!-- android:exported="false" No puede ser llamado por otras apps -->
+    <!-- android:foregroundServiceType="specialUse">   Tipo: uso especial (digital wellbeing) -->
+    <!--android:value="Digital Wellbeing and App Usage Monitoring"/> Descripción para Google Play -->
+<service
+android:name=".data.services.VicioMonitorService"
+android:enabled="true"
+android:exported="false"
+android:foregroundServiceType="specialUse">
+<property
+android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+android:value="Digital Wellbeing and App Usage Monitoring"/>
+    </service>
+
+
+<service
+android:name=".data.services.CallNotificationListener"
+android:label="@string/app_name"
+android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+android:exported="true">            <!-- Debe ser exportado para que el sistema pueda conectarse -->
+<intent-filter>
+    <!-- Registra este servicio como un NotificationListenerService del sistema -->
+    <action android:name="android.service.notification.NotificationListenerService" />
+</intent-filter>
+</service>
 
     </application>
 </manifest>
