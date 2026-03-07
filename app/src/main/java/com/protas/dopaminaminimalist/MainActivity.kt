@@ -23,10 +23,18 @@ import com.protas.dopaminaminimalist.ui.PermissionManager.PermissionStep
 class MainActivity : ComponentActivity() {
 
     // Inicialización de dependencias (Lazy para optimizar recursos)
+
+    // — prepara el motor de análisis de comportamiento de uso
     private val analyzer by lazy { VicioAnalyzer(this) }
+
+    // prepara el acceso a las estadísticas de uso de apps del sistema
     private val provider by lazy { UsageProvider(this) }
+    // prepara el gestor que guarda/lee el historial local
     private val history by lazy { HistorialManager(this) }
+    // conecta las 3 anteriores en un solo punto de acceso a datos
     private val repository by lazy { VicioRepository(analyzer, provider, history) }
+
+    //prepara el ViewModel con el repository listo para dárselo a la UI
     private val viewModel by lazy { HomeViewModel(repository) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
