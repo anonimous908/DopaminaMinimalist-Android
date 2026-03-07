@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.ui.MainPagerContainer
+package com.protas.dopaminaminimalist.ui.mainPagerContainer
 
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState

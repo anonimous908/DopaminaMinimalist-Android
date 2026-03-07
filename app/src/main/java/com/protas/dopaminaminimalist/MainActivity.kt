@@ -12,7 +12,7 @@ import com.protas.dopaminaminimalist.data.local.HistorialManager
 import com.protas.dopaminaminimalist.data.local.UsageProvider
 import com.protas.dopaminaminimalist.data.ml.VicioAnalyzer
 import com.protas.dopaminaminimalist.data.repository.VicioRepository
-import com.protas.dopaminaminimalist.ui.MainPagerContainer.MainPagerContainer
+import com.protas.dopaminaminimalist.ui.mainPagerContainer.MainPagerContainer
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
 // Importamos tu nuevo gestor de permisos y las extensiones
