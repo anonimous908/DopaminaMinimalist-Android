@@ -3,7 +3,16 @@ package com.protas.dopaminaminimalist.data.local
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import java.util.Calendar
+import kotlin.math.sin
+import kotlin.math.cos
+import kotlin.math.PI
 
+data class AppUsageInfo(
+    val packageName: String,
+    val appName: String,
+    val timeInHours: Float,
+    val category: String
+)
 class UsageProvider(private val context: Context) {
 
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -65,6 +74,14 @@ class UsageProvider(private val context: Context) {
                 }
             }
         }
+        // Columnas de tiempo cíclico (necesarias para el modelo TFLite)
+        val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY).toFloat()
+        val dia = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).toFloat()
+
+        statsVector[16] = sin(2 * PI * hora / 24).toFloat()
+        statsVector[17] = cos(2 * PI * hora / 24).toFloat()
+        statsVector[18] = sin(2 * PI * dia / 7).toFloat()
+        statsVector[19] = cos(2 * PI * dia / 7).toFloat()
 
         statsVector[5] = statsVector[0] + (statsVector[1] * 0.5f)
         statsVector[4] = (statsVector[0] + statsVector[1]) * 0.2f
@@ -121,4 +138,44 @@ class UsageProvider(private val context: Context) {
             -1
         }
     }
+    fun obtenerTopApps(): List<AppUsageInfo> {
+        val calendar = Calendar.getInstance()
+        val endTime = calendar.timeInMillis
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        val startTime = calendar.timeInMillis
+
+        val usageStats = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY, startTime, endTime
+        )
+
+        return usageStats
+            .filter { stats ->
+                val timeInHours = stats.totalTimeInForeground / (1000 * 60 * 60).toFloat()
+                timeInHours > 0.01f && !esAppDelSistema(stats.packageName)
+            }
+            .map { stats ->
+                val timeInHours = stats.totalTimeInForeground / (1000 * 60 * 60).toFloat()
+                val appName = try {
+                    context.packageManager.getApplicationLabel(
+                        context.packageManager.getApplicationInfo(stats.packageName, 0)
+                    ).toString()
+                } catch (e: Exception) {
+                    stats.packageName
+                }
+                val category = when (adivinarCategoriaPorNombre(stats.packageName)) {
+                    catSocial -> "Social"
+                    catVideo -> "Video"
+                    catGame -> "Juegos"
+                    catProductivity -> "Productividad"
+                    else -> "Otros"
+                }
+                AppUsageInfo(stats.packageName, appName, timeInHours, category)
+            }
+            .sortedByDescending { it.timeInHours }
+            .take(5) // Top 5 apps
+    }
+
+
 }
