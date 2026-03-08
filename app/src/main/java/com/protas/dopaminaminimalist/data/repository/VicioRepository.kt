@@ -18,21 +18,16 @@ class VicioRepository(
                 val matrizInput = arrayOf(ultimos30Dias.toTypedArray())
 
                 // --- LOG 1: ¿QUÉ SALE DEL USAGE PROVIDER? ---
-                Log.e("VICIO_DEBUG", "--- DATOS CRUDOS DE HOY ---")
-                Log.e("VICIO_DEBUG", "Días recuperados: ${ultimos30Dias.size}")
-                Log.e("VICIO_DEBUG", "Vector día 30: ${matrizInput[0][29].contentToString()}")
+                Log.d("VICIO_DEBUG", "--- DATOS CRUDOS DE HOY ---")
+                Log.d("VICIO_DEBUG", "Días recuperados: ${ultimos30Dias.size}")
+                Log.d("VICIO_DEBUG", "Vector día 30: ${matrizInput[0][29].contentToString()}")
                 // ---------------------------------------------
-
-                // --- LOG 2: ¿QUÉ ENTRA A LA IA EXACTAMENTE? ---
-                // Imprimimos el último día de la matriz (el día 30)
-                val dia30 = matrizInput[0][29]
-                Log.e("VICIO_DEBUG", "Vector Final a la IA: ${dia30.contentToString()}")
 
                 // 2. Ejecutar IA
                 val score = analyzer.predict(matrizInput)
 
                 // --- LOG 3: ¿QUÉ DICE LA IA? ---
-                Log.e("VICIO_DEBUG", ">>> PREDICCIÓN IA: $score")
+                Log.d("VICIO_DEBUG", ">>> PREDICCIÓN IA: $score")
 
                 Result.success(score)
 
@@ -43,7 +38,9 @@ class VicioRepository(
         }
     }
 
-    fun obtenerHistorialGrafica(): List<Float> {
-        return usageProvider.obtenerDatosGrafica()
+    suspend fun obtenerHistorialGrafica(): List<Float> {
+        return withContext(Dispatchers.IO) {
+            usageProvider.obtenerDatosGrafica()
+        }
     }
 }
