@@ -3,6 +3,7 @@ package com.protas.dopaminaminimalist
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -20,6 +21,7 @@ import com.protas.dopaminaminimalist.avisos_privacidad.OnBoardingScreen
 import com.protas.dopaminaminimalist.ui.PermissionManager.PermissionManagerScreen
 import com.protas.dopaminaminimalist.ui.PermissionManager.getNextPermissionStep
 import com.protas.dopaminaminimalist.ui.PermissionManager.PermissionStep
+import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -36,7 +38,8 @@ class MainActivity : ComponentActivity() {
     private val repository by lazy { VicioRepository(analyzer, provider, history) }
 
     //prepara el ViewModel con el repository listo para dárselo a la UI
-    private val viewModel by lazy { HomeViewModel(repository) }
+    val factory = HomeViewModelFactory(repository)
+    val viewModel: HomeViewModel by viewModels { factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

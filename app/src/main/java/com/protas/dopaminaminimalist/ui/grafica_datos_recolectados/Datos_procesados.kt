@@ -26,7 +26,7 @@ import com.protas.dopaminaminimalist.ui.components.UsageGraph
 
 @OptIn(ExperimentalMaterial3Api::class) // Necesario para LargeTopAppBar
 @Composable
-fun datos_procesados(viewModel: HomeViewModel) {
+fun Datos_procesados(viewModel: HomeViewModel) {
     // Observamos el estado del ViewModel
     val uiState by viewModel.uiState.collectAsState()
 

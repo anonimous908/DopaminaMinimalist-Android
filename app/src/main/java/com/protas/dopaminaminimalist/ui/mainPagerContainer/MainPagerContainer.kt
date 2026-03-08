@@ -4,7 +4,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import com.protas.dopaminaminimalist.ui.SettingsScreen.SettingsScreen
-import com.protas.dopaminaminimalist.ui.grafica_datos_recolectados.datos_procesados
+import com.protas.dopaminaminimalist.ui.grafica_datos_recolectados.Datos_procesados
 import com.protas.dopaminaminimalist.ui.screens.home.HomeScreen
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 
@@ -19,7 +19,7 @@ fun MainPagerContainer(viewModel: HomeViewModel) {
         beyondViewportPageCount = 1 // <--- ESTO: Mantiene las páginas de los lados listas en memoria
     ) { page ->
         when (page) {
-            0 -> datos_procesados(viewModel = viewModel) // Pantalla de la izquierda
+            0 -> Datos_procesados(viewModel = viewModel) // Pantalla de la izquierda
             1 -> HomeScreen(viewModel = viewModel) // Pantalla central
             2 -> SettingsScreen(viewModel = viewModel) // Pantalla de la derecha
 
