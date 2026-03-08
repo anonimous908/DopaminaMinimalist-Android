@@ -7,9 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,20 +25,34 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+
 fun OnBoardingScreen(navController: NavController) {
     val context = LocalContext.current
     val dataStore = StoreBoarding(context)
     val scope = rememberCoroutineScope()
+    //investiga cuantas lineas tiene onBoardingData
     val pagerState = rememberPagerState(pageCount = { listaPaginas.size })
+    /*
+    var checkedState empieza en falce si el usuario marcó
+    el checkbox de políticas cambia a true nesesario para activar boton
+    popUpTo
+     */
 
-    // 1. ESTADOS NUEVOS PARA LA PRIVACIDAD
     var checkedState by remember { mutableStateOf(false) }
+    /*mostrarPoliticaCompleta — guarda true/else para
+    controlar si el diálogo flotante de privacidad está visible o no.
+     Empieza en else (oculto), se pone true cuando el usuario toca "política de privacidad",
+      */
     var mostrarPoliticaCompleta by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f)
+
+        //page[] lo busca de listaPaginas (está en mismo paquete no es necesario import)
+        // y lo trae para aca y lo de abajo le dice composte
+        // cómo y de qué tamaño dibujar cada dato de ese objeto.
         ) { page ->
             val item = listaPaginas[page]
 
@@ -110,9 +122,11 @@ fun OnBoardingScreen(navController: NavController) {
                 Button(
                     onClick = {
                         scope.launch {
+                            //Función para guardar que YA lo vimos en StoreBoarding
                             dataStore.saveBoarding(true)
                             // Dentro de tu OnBoardingScreen.kt, en el onClick del botón:
                             navController.navigate("main_flow") {
+                                //elimina el onboarding del stack de navegación, entonces el usuario no puede regresar a él
                                 popUpTo("onboarding_screen") { inclusive = true }
                             }
                         }

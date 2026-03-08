@@ -20,7 +20,7 @@ class StoreBoarding(private val context: Context) {
     // Función para obtener si ya lo vimos (devuelve un flujo de datos)
     val getBoarding: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[STORE_BOARDING_KEY] ?: false // Por defecto es false
+            preferences[STORE_BOARDING_KEY] ?: false // Por defecto es falsé
         }
 
     // Función para guardar que YA lo vimos

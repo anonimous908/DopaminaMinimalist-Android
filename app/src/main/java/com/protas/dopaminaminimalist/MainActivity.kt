@@ -15,6 +15,7 @@ import com.protas.dopaminaminimalist.data.repository.VicioRepository
 import com.protas.dopaminaminimalist.ui.mainPagerContainer.MainPagerContainer
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
+import com.protas.dopaminaminimalist.avisos_privacidad.OnBoardingScreen
 // Importamos tu nuevo gestor de permisos y las extensiones
 import com.protas.dopaminaminimalist.ui.PermissionManager.PermissionManagerScreen
 import com.protas.dopaminaminimalist.ui.PermissionManager.getNextPermissionStep
@@ -48,9 +49,15 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = "onboarding_screen"
                 ) {
-                    // PANTALLA A: Políticas de privacidad
+                    /* PANTALLA A: Políticas de privacidad
+                    Como OnBoardingScreen no necesita datos de uso de apps
+                    solo necesita el navController para saber a dónde navegar
+                    y en cambio el viewModel contiene datos de monitoreo de apps,
+                    y en la pantalla de onboarding todavía no se necesita nada de eso.
+
+                    */
                     composable("onboarding_screen") {
-                        com.protas.dopaminaminimalist.avisos_privacidad.OnBoardingScreen(navController)
+                        OnBoardingScreen(navController)
                     }
 
                     // PANTALLA B: Flujo principal con validación de permisos
