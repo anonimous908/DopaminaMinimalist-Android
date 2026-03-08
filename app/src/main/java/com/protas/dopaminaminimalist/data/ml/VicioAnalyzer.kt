@@ -26,11 +26,11 @@ class VicioAnalyzer(private val context: Context) {
 
     private fun loadModelFile(): MappedByteBuffer {
         val assetFileDescriptor = context.assets.openFd("model_vicio_pro.tflite")
-        val fileInputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
-        val fileChannel = fileInputStream.channel
-        val startOffset = assetFileDescriptor.startOffset
-        val declaredLength = assetFileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+        return assetFileDescriptor.use {
+            val fileInputStream = FileInputStream(it.fileDescriptor)
+            val fileChannel = fileInputStream.channel
+            fileChannel.map(FileChannel.MapMode.READ_ONLY, it.startOffset, it.declaredLength)
+        }
     }
 
     fun predict(inputData: Array<Array<FloatArray>>): Float {
@@ -44,7 +44,7 @@ class VicioAnalyzer(private val context: Context) {
             val output = Array(1) { FloatArray(1) }
 
             Log.d("VICIO_IA", "🔮 Ejecutando inferencia...")
-            interpreter?.run(inputData, output)
+            interpreter!!.run(inputData, output)
 
             val resultado = output[0][0]
             Log.d("VICIO_IA", "⚡ Resultado Bruto IA: $resultado")
