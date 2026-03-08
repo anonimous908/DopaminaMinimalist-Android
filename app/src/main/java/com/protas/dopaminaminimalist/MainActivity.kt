@@ -9,7 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.protas.dopaminaminimalist.data.local.HistorialManager
 import com.protas.dopaminaminimalist.data.local.UsageProvider
 import com.protas.dopaminaminimalist.data.ml.VicioAnalyzer
 import com.protas.dopaminaminimalist.data.repository.VicioRepository
@@ -32,10 +31,7 @@ class MainActivity : ComponentActivity() {
 
     // prepara el acceso a las estadísticas de uso de apps del sistema
     private val provider by lazy { UsageProvider(this) }
-    // prepara el gestor que guarda/lee el historial local
-    private val history by lazy { HistorialManager(this) }
-    // conecta las 3 anteriores en un solo punto de acceso a datos
-    private val repository by lazy { VicioRepository(analyzer, provider, history) }
+    private val repository by lazy { VicioRepository(analyzer, provider) }
 
 
 

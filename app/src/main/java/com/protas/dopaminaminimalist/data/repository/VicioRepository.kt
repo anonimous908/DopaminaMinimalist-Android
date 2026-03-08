@@ -1,7 +1,6 @@
 package com.protas.dopaminaminimalist.data.repository
 
 import android.util.Log // <--- Importante
-import com.protas.dopaminaminimalist.data.local.HistorialManager
 import com.protas.dopaminaminimalist.data.local.UsageProvider
 import com.protas.dopaminaminimalist.data.ml.VicioAnalyzer
 import kotlinx.coroutines.Dispatchers
@@ -9,8 +8,7 @@ import kotlinx.coroutines.withContext
 
 class VicioRepository(
     private val analyzer: VicioAnalyzer,
-    private val usageProvider: UsageProvider,
-    private val historyManager: HistorialManager
+    private val usageProvider: UsageProvider
 ) {
 
     suspend fun obtenerAnalisisCompleto(): Result<Float> {
@@ -46,6 +44,6 @@ class VicioRepository(
     }
 
     fun obtenerHistorialGrafica(): List<Float> {
-        return historyManager.obtenerDatosGrafica()
+        return usageProvider.obtenerDatosGrafica()
     }
 }

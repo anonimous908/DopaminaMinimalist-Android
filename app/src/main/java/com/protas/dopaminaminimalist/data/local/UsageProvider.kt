@@ -2,22 +2,17 @@ package com.protas.dopaminaminimalist.data.local
 
 import android.app.usage.UsageStatsManager
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.util.Log
 import java.util.Calendar
 
 class UsageProvider(private val context: Context) {
 
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
-    // Constantes
-    private val CAT_GAME = 0
-    private val CAT_AUDIO = 1
-    private val CAT_VIDEO = 2
-    private val CAT_SOCIAL = 4
-    private val CAT_PRODUCTIVITY = 7
-    private val CAT_MAPS = 6
-
+    private val catGame = 0
+    private val catAudio = 1
+    private val catVideo = 2
+    private val catSocial = 4
+    private val catProductivity = 7
     // --- MÁQUINA DEL TIEMPO (30 DÍAS) ---
     fun recuperarUltimos30Dias(): List<FloatArray> {
         val listaHistorial = mutableListOf<FloatArray>()
@@ -38,20 +33,19 @@ class UsageProvider(private val context: Context) {
         return listaHistorial
     }
 
-    fun getDailyStats(): FloatArray {
-        val calendar = Calendar.getInstance()
-        val endTime = calendar.timeInMillis
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        val startTime = calendar.timeInMillis
 
-        return consultarYProcesar(startTime, endTime)
+
+    fun obtenerDatosGrafica(): List<Float> {
+        val ultimos30Dias = recuperarUltimos30Dias()
+        val ultimos7Dias = ultimos30Dias.takeLast(7)
+        return ultimos7Dias.map { dia -> dia.sum() }
     }
+
+
 
     // --- PROCESADOR CENTRAL ---
     private fun consultarYProcesar(start: Long, end: Long): FloatArray {
-        val statsVector = FloatArray(20) { 0f }
+        val statsVector = FloatArray(20)
         val usageStats = usageStatsManager.queryUsageStats(
             UsageStatsManager.INTERVAL_DAILY, start, end
         )
@@ -60,13 +54,13 @@ class UsageProvider(private val context: Context) {
             val timeInHours = stats.totalTimeInForeground / (1000 * 60 * 60).toFloat()
             if (timeInHours > 0.01f && !esAppDelSistema(stats.packageName)) {
                 var category = getAppCategory(stats.packageName)
-                if (category == -1 || category == ApplicationInfo.CATEGORY_UNDEFINED) {
+                if (category == -1) {
                     category = adivinarCategoriaPorNombre(stats.packageName)
                 }
                 when (category) {
-                    CAT_SOCIAL -> statsVector[0] += timeInHours
-                    CAT_GAME, CAT_VIDEO, CAT_AUDIO -> statsVector[1] += timeInHours
-                    CAT_PRODUCTIVITY -> statsVector[2] += timeInHours
+                    catSocial -> statsVector[0] += timeInHours
+                    catGame, catVideo, catAudio -> statsVector[1] += timeInHours
+                    catProductivity -> statsVector[2] += timeInHours
                     else -> statsVector[19] += timeInHours
                 }
             }
@@ -81,30 +75,30 @@ class UsageProvider(private val context: Context) {
     private fun adivinarCategoriaPorNombre(pkg: String): Int {
         val name = pkg.lowercase()
         return when {
-            // REDES
-            name.contains("whatsapp") -> CAT_SOCIAL
-            name.contains("facebook") -> CAT_SOCIAL
-            name.contains("instagram") -> CAT_SOCIAL
-            name.contains("tiktok") -> CAT_SOCIAL
-            name.contains("twitter") -> CAT_SOCIAL
-            name.contains("telegram") -> CAT_SOCIAL
-            name.contains("reddit") -> CAT_SOCIAL
-            name.contains("discord") -> CAT_SOCIAL
-            name.contains("browser") -> CAT_SOCIAL // Brave, Chrome a veces se usan para vicio
-            name.contains("chrome") -> CAT_SOCIAL
+            // REDES catSocial
+            name.contains("whatsapp") -> catSocial
+            name.contains("facebook") -> catSocial
+            name.contains("instagram") -> catSocial
+            name.contains("tiktok") -> catSocial
+            name.contains("twitter") -> catSocial
+            name.contains("telegram") -> catSocial
+            name.contains("reddit") -> catSocial
+            name.contains("discord") -> catSocial
+            name.contains("browser") -> catSocial // Brave, Chrome a veces se usan para vicio
+            name.contains("chrome") -> catSocial
 
             // VIDEO / JUEGOS
-            name.contains("youtube") -> CAT_VIDEO
-            name.contains("netflix") -> CAT_VIDEO
-            name.contains("steam") -> CAT_GAME    // <--- AGREGADO
-            name.contains("tycoon") -> CAT_GAME   // <--- AGREGADO (Prison Empire)
-            name.contains("games") -> CAT_GAME    // <--- AGREGADO (General)
+            name.contains("youtube") -> catVideo
+            name.contains("netflix") -> catVideo
+            name.contains("steam") -> catGame    // <--- AGREGADO
+            name.contains("tycoon") -> catGame   // <--- AGREGADO (Prison Empire)
+            name.contains("games") -> catGame    // <--- AGREGADO (General)
 
             // PRODUCTIVIDAD
-            name.contains("chatgpt") -> CAT_PRODUCTIVITY // <--- AGREGADO
-            name.contains("classroom") -> CAT_PRODUCTIVITY // <--- AGREGADO
-            name.contains("investing") -> CAT_PRODUCTIVITY // <--- AGREGADO
-            name.contains("calculator") -> CAT_PRODUCTIVITY
+            name.contains("chatgpt") -> catProductivity // <--- AGREGADO
+            name.contains("classroom") -> catProductivity // <--- AGREGADO
+            name.contains("investing") -> catProductivity // <--- AGREGADO
+            name.contains("calculator") -> catProductivity
 
             else -> -1
         }
