@@ -52,21 +52,17 @@ class UsageProvider(private val context: Context) {
     // --- PROCESADOR CENTRAL ---
     private fun consultarYProcesar(start: Long, end: Long): FloatArray {
         val statsVector = FloatArray(20) { 0f }
-        val usageStats = usageStatsManager.queryAndAggregateUsageStats(start, end)
+        val usageStats = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY, start, end
+        )
 
-        // Log.d("VICIO_ANALISIS", "--- ESCANEANDO APPS ---") // Comentado para no saturar, descomentar si necesitas
-
-        usageStats.forEach { (packageName, stats) ->
+        usageStats.forEach { stats ->
             val timeInHours = stats.totalTimeInForeground / (1000 * 60 * 60).toFloat()
-
-            // Filtramos apps irrelevantes (< 1 min) y del sistema
-            if (timeInHours > 0.01f && !esAppDelSistema(packageName)) {
-
-                var category = getAppCategory(packageName)
+            if (timeInHours > 0.01f && !esAppDelSistema(stats.packageName)) {
+                var category = getAppCategory(stats.packageName)
                 if (category == -1 || category == ApplicationInfo.CATEGORY_UNDEFINED) {
-                    category = adivinarCategoriaPorNombre(packageName)
+                    category = adivinarCategoriaPorNombre(stats.packageName)
                 }
-
                 when (category) {
                     CAT_SOCIAL -> statsVector[0] += timeInHours
                     CAT_GAME, CAT_VIDEO, CAT_AUDIO -> statsVector[1] += timeInHours
@@ -76,25 +72,11 @@ class UsageProvider(private val context: Context) {
             }
         }
 
-        // =====================================================================
-        // 🚨 PARTE CRÍTICA RESTAURADA (SIN ESTO LA IA DA 0%) 🚨
-        // =====================================================================
-
-        // 1. INFERENCIA DE SCROLL (Col 5)
-        // Si usaste WhatsApp (Col 0), también cuenta como Scroll.
-        // Sumamos Col 0 + un poco de Col 1 (YouTube Shorts/TikTok)
         statsVector[5] = statsVector[0] + (statsVector[1] * 0.5f)
-
-        // 2. INFERENCIA NOCTURNA (Col 4)
-        // Estimamos que el 20% de tu vicio ocurre de noche
         statsVector[4] = (statsVector[0] + statsVector[1]) * 0.2f
 
-        // =====================================================================
-
-        Log.d("VICIO_DEBUG", "Final: Social=${statsVector[0]}, Video=${statsVector[1]}, SCROLL=${statsVector[5]}")
         return statsVector
     }
-
     // --- DICCIONARIO ACTUALIZADO CON TUS APPS ---
     private fun adivinarCategoriaPorNombre(pkg: String): Int {
         val name = pkg.lowercase()

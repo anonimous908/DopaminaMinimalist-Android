@@ -37,13 +37,14 @@ class MainActivity : ComponentActivity() {
     // conecta las 3 anteriores en un solo punto de acceso a datos
     private val repository by lazy { VicioRepository(analyzer, provider, history) }
 
-    //prepara el ViewModel con el repository listo para dárselo a la UI
-    val factory = HomeViewModelFactory(repository)
-    val viewModel: HomeViewModel by viewModels { factory }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        //prepara el ViewModel con el repository listo para dárselo a la UI
+        val factory = HomeViewModelFactory(repository)
+        val viewModel: HomeViewModel by viewModels { factory }
         setContent {
             DopaminaMinimalistTheme {
                 val navController = rememberNavController()
