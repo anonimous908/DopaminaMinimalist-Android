@@ -1,0 +1,153 @@
+package com.protas.dopaminaminimalist.ui.screens.armas
+
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.*
+import com.protas.dopaminaminimalist.ui.navigation.BorderBase
+import com.protas.dopaminaminimalist.ui.navigation.TextMain
+import com.protas.dopaminaminimalist.ui.navigation.TextMuted
+import com.protas.dopaminaminimalist.ui.navigation.TextSub
+
+data class Weapon(
+    val id: String,
+    val icon: String,
+    val name: String,
+    val desc: String,
+    val color: Color
+)
+
+val WEAPONS = listOf(
+    Weapon("barrera", "⏱️", "Barrera de 10s",
+        "Espera antes de entrar a una app", Color(0xFF4F46E5)),
+    Weapon("grises",  "🌫️", "Modo Grises",
+        "Pantalla sin color = menos tentación", Color(0xFF6B7280)),
+    Weapon("monje",   "🧘", "Modo Monje",
+        "Bloqueo total de apps distractoras", Color(0xFF7C3AED)),
+    Weapon("toque",   "🌙", "Toque de Queda",
+        "Todo se bloquea después de las 11 PM", Color(0xFF1D4ED8)),
+    Weapon("hud",     "📊", "Contador Flotante",
+        "Ves cuánto llevas en pantalla en tiempo real", Color(0xFF059669)),
+    Weapon("ia",      "🤖", "IA Directa",
+        "Te avisa cuando vas mal antes de que empeore", Color(0xFFDC2626)),
+)
+
+@Composable
+fun ArmasScreen(activeWeapons: MutableMap<String, Boolean>) {
+    val activeCount = activeWeapons.values.count { it }
+
+    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Text("Tus retos activos", color = TextMain, fontSize = 22.sp,
+            fontWeight = FontWeight.Black)
+        Text("Activa las que quieras. Puedes cambiarlas cuando quieras.",
+            color = TextSub, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+
+        Spacer(Modifier.height(16.dp))
+
+        val pillBg     = if (activeCount > 0) Color(0xFFECFDF5) else Color(0xFFFEF2F2)
+        val pillBorder = if (activeCount > 0) Color(0xFFBBF7D0) else Color(0xFFFECACA)
+        val pillText   = if (activeCount > 0) Color(0xFF065F46) else Color(0xFF991B1B)
+        val pillLabel  = if (activeCount > 0)
+            "✅ $activeCount arma${if (activeCount > 1) "s" else ""} encendida${if (activeCount > 1) "s" else ""}"
+        else "⚠️ Ninguna arma activa"
+
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(pillBg)
+                .border(2.dp, pillBorder, RoundedCornerShape(16.dp))
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(pillLabel, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold,
+                color = pillText)
+            Text("${6 - activeCount} disponibles", fontSize = 11.sp,
+                fontWeight = FontWeight.Bold, color = TextSub
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        WEAPONS.forEach { weapon ->
+            val on = activeWeapons[weapon.id] == true
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        if (on) weapon.color.copy(alpha = 0.07f)
+                        else Color(0xFFFAFAFA))
+                    .border(2.dp,
+                        if (on) weapon.color.copy(alpha = 0.35f) else BorderBase,
+                        RoundedCornerShape(20.dp))
+                    .clickable {
+                        activeWeapons[weapon.id] = !(activeWeapons[weapon.id] ?: false)
+                    }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier.size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (on) weapon.color.copy(alpha = 0.15f)
+                            else Color(0xFFF3F4F6))
+                        .border(2.dp,
+                            if (on) weapon.color.copy(alpha = 0.2f)
+                            else Color.Transparent,
+                            RoundedCornerShape(16.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(weapon.icon, fontSize = 22.sp)
+                }
+                Spacer(Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(weapon.name, fontSize = 14.sp, fontWeight = FontWeight.Black,
+                        color = if (on) TextMain else Color(0xFF374151))
+                    Text(weapon.desc, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
+                        color = TextMuted
+                    )
+                }
+                Spacer(Modifier.width(14.dp))
+                Switch(
+                    checked = on,
+                    onCheckedChange = { activeWeapons[weapon.id] = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = weapon.color,
+                        uncheckedThumbColor = Color.White,
+                        uncheckedTrackColor = Color(0xFFE5E7EB)
+                    )
+                )
+            }
+        }
+
+        if (activeCount >= 3) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFECFDF5)),
+                border = BorderStroke(2.dp, Color(0xFFBBF7D0)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("🎉", fontSize = 22.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Text("¡Modo defensa activado! $activeCount armas encendidas.",
+                        fontSize = 13.sp, fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF065F46))
+                }
+            }
+        }
+    }
+}
