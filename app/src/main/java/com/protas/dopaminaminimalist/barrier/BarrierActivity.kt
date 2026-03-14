@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.presentation
+package com.protas.dopaminaminimalist.barrier
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

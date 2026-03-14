@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.data.ml
+package com.protas.dopaminaminimalist.data.ai
 
 import android.content.Context
 import android.util.Log
@@ -7,7 +7,7 @@ import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
-class VicioAnalyzer(private val context: Context) {
+class AddictionAnalyzer(private val context: Context) {
 
     private var interpreter: Interpreter? = null
 

@@ -9,25 +9,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.protas.dopaminaminimalist.data.local.UsageProvider
-import com.protas.dopaminaminimalist.data.ml.VicioAnalyzer
+import com.protas.dopaminaminimalist.data.datasource.UsageProvider
+import com.protas.dopaminaminimalist.data.ai.AddictionAnalyzer
 import com.protas.dopaminaminimalist.data.repository.VicioRepository
-import com.protas.dopaminaminimalist.ui.mainPagerContainer.MainPagerContainer
-import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
+import com.protas.dopaminaminimalist.ui.screens.settings.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
-import com.protas.dopaminaminimalist.avisos_privacidad.OnBoardingScreen
+import com.protas.dopaminaminimalist.onboarding.OnBoardingScreen
 // Importamos tu nuevo gestor de permisos y las extensiones
-import com.protas.dopaminaminimalist.ui.PermissionManager.PermissionManagerScreen
-import com.protas.dopaminaminimalist.ui.PermissionManager.getNextPermissionStep
-import com.protas.dopaminaminimalist.ui.PermissionManager.PermissionStep
-import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModelFactory
+import com.protas.dopaminaminimalist.ui.screens.permission.PermissionManagerScreen
+import com.protas.dopaminaminimalist.ui.screens.permission.getNextPermissionStep
+import com.protas.dopaminaminimalist.ui.screens.permission.PermissionStep
+import com.protas.dopaminaminimalist.ui.navigation.EnfocaApp
+import com.protas.dopaminaminimalist.ui.screens.settings.HomeViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
     // Inicialización de dependencias (Lazy para optimizar recursos)
 
     // — prepara el motor de análisis de comportamiento de uso
-    private val analyzer by lazy { VicioAnalyzer(this) }
+    private val analyzer by lazy { AddictionAnalyzer(this) }
 
     // prepara el acceso a las estadísticas de uso de apps del sistema
     private val provider by lazy { UsageProvider(this) }
@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                         // BIFURCACIÓN: permisos completos → app | permisos faltantes → wizard
                         if (allPermsGranted) {
                             // Si_todo está ok, entramos a la app (enfocaAPP)
-                            MainPagerContainer(viewModel = viewModel)
+                            EnfocaApp(viewModel = viewModel)
                         } else {
 
                             // Cuando el wizard termina, actualiza el estado y entra a la app

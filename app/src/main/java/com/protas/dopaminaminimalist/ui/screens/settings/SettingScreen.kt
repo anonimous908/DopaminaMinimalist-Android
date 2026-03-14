@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.ui.SettingsScreen
+package com.protas.dopaminaminimalist.ui.screens.settings
 
 
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 
 // Modelo de datos para tus interruptores
 data class DefenseOption(

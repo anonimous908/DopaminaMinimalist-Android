@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.avisos_privacidad
+package com.protas.dopaminaminimalist.onboarding
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 fun OnBoardingScreen(navController: NavController) {
     val context = LocalContext.current
-    val dataStore = StoreBoarding(context)
+    val dataStore = OnBoardingPreferences(context)
     val scope = rememberCoroutineScope()
     //investiga cuantas lineas tiene onBoardingData
     val pagerState = rememberPagerState(pageCount = { listaPaginas.size })

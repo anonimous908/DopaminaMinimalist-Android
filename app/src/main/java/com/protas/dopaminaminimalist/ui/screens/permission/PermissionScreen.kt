@@ -1,5 +1,6 @@
-package com.protas.dopaminaminimalist.ui.PermissionManager
+package com.protas.dopaminaminimalist.ui.screens.permission
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -66,7 +67,7 @@ fun PermissionManagerScreen(onAllPermissionsGranted: () -> Unit) {
                 }
                 PermissionStep.NOTIFICATIONS -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        notificationLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
                 PermissionStep.ALL_GRANTED -> onAllPermissionsGranted()

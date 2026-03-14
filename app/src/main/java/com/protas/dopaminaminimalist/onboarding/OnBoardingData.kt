@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.avisos_privacidad
+package com.protas.dopaminaminimalist.onboarding
 
 import androidx.compose.ui.graphics.Color
 import com.protas.dopaminaminimalist.R

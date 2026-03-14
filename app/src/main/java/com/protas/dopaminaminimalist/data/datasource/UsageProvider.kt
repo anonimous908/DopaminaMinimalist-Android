@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.data.local
+package com.protas.dopaminaminimalist.data.datasource
 
 import android.app.usage.UsageStatsManager
 import android.content.Context

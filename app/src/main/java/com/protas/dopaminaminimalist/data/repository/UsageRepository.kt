@@ -1,9 +1,9 @@
 package com.protas.dopaminaminimalist.data.repository
 
 import android.util.Log
-import com.protas.dopaminaminimalist.data.local.AppUsageInfo
-import com.protas.dopaminaminimalist.data.local.UsageProvider
-import com.protas.dopaminaminimalist.data.ml.VicioAnalyzer
+import com.protas.dopaminaminimalist.data.datasource.AppUsageInfo
+import com.protas.dopaminaminimalist.data.datasource.UsageProvider
+import com.protas.dopaminaminimalist.data.ai.AddictionAnalyzer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -18,7 +18,7 @@ data class DatosCompletos(
 )
 
 class VicioRepository(
-    private val analyzer: VicioAnalyzer,
+    private val analyzer: AddictionAnalyzer,
     private val usageProvider: UsageProvider
 ) {
     suspend fun obtenerTodosDatos(): DatosCompletos {

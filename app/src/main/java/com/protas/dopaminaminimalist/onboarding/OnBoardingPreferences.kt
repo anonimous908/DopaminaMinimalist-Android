@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.avisos_privacidad
+package com.protas.dopaminaminimalist.onboarding
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 
 
-class StoreBoarding(private val context: Context) {
+class OnBoardingPreferences(private val context: Context) {
 
     // Creamos la "base de datos" pequeña
     companion object {

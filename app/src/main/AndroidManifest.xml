@@ -74,7 +74,7 @@
     <!-- Solo puede existir una instancia a la vez -->
     <!-- No pertenece a ninguna tarea/stack de actividades -->
     <activity
-        android:name=".presentation.BarrierActivity"
+        android:name=".barrier.BarrierActivity"
         android:theme="@style/Theme.DopaminaMinimalist"
         android:excludeFromRecents="true"
         android:launchMode="singleInstance"
@@ -88,7 +88,7 @@
     <!-- android:foregroundServiceType="specialUse">   Tipo: uso especial (digital wellbeing) -->
     <!--android:value="Digital Wellbeing and App Usage Monitoring"/> Descripción para Google Play -->
 <service
-android:name=".data.services.VicioMonitorService"
+android:name=".data.services.UsageMonitorService"
 android:enabled="true"
 android:exported="false"
 android:foregroundServiceType="specialUse">

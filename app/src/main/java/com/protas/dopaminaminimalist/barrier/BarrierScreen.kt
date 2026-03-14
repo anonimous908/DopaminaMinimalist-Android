@@ -1,8 +1,7 @@
-package com.protas.dopaminaminimalist.presentation
+package com.protas.dopaminaminimalist.barrier
 
 import android.app.Activity
 import android.view.MotionEvent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

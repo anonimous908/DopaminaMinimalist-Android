@@ -15,12 +15,11 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.protas.dopaminaminimalist.MainActivity
-import com.protas.dopaminaminimalist.R
-import com.protas.dopaminaminimalist.presentation.BarrierActivity
+import com.protas.dopaminaminimalist.barrier.BarrierActivity
 // import com.protas.dopaminaminimalist.presentation.BarrierActivity // Descomenta cuando tengas la BarrierActivity
 import java.util.TreeMap
 
-class VicioMonitorService : Service() {
+class UsageMonitorService : Service() {
 
     private val CHECK_INTERVAL = 2000L // Chequear cada 2 segundos (Tiempo real)
     private val NOTIFICATION_ID = 1
