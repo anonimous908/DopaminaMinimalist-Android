@@ -44,7 +44,7 @@ fun HomeScreen(
             Column {
                 Text("ENFOCA APP", color = TextMuted, fontSize = 12.sp,
                     fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                Text("Hola, David 👋", color = TextMain, fontSize = 22.sp,
+                Text("Hola 👋", color = TextMain, fontSize = 22.sp,
                     fontWeight = FontWeight.Black)
             }
             Box(

@@ -72,6 +72,10 @@ class UsageProvider(private val context: Context) {
                     catProductivity -> statsVector[2] += timeInHours
                     else -> statsVector[3] += timeInHours
                 }
+                statsVector[0] = statsVector[0].coerceIn(0f, 24f)
+                statsVector[1] = statsVector[1].coerceIn(0f, 24f)
+                statsVector[2] = statsVector[2].coerceIn(0f, 24f)
+                statsVector[3] = statsVector[3].coerceIn(0f, 24f)
             }
         }
         // Columnas de tiempo cíclico (necesarias para el modelo TFLite)
