@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = "onboarding_screen"
+                    startDestination = "onboarding_screen"//destinacion inicial
                 ) {
                     /* PANTALLA A: Políticas de privacidad
                     Como OnBoardingScreen no necesita datos de uso de apps
