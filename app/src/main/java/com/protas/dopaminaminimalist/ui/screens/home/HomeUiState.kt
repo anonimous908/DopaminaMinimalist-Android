@@ -1,4 +1,4 @@
-package com.protas.dopaminaminimalist.ui.screens.settings
+package com.protas.dopaminaminimalist.ui.screens.home
 
 import com.protas.dopaminaminimalist.data.datasource.AppUsageInfo
 

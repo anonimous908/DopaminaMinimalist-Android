@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import com.protas.dopaminaminimalist.ui.screens.armas.ArmasScreen
 import com.protas.dopaminaminimalist.ui.screens.progreso.ProgresoScreen
-import com.protas.dopaminaminimalist.ui.screens.settings.HomeScreen
-import com.protas.dopaminaminimalist.ui.screens.settings.HomeViewModel
+import com.protas.dopaminaminimalist.ui.screens.home.HomeScreen
+import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 
 val BgPage     = Color(0xFFF0F4FF)
 val CardBg     = Color(0xFFFFFFFF)

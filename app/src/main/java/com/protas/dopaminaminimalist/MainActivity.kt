@@ -12,7 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.protas.dopaminaminimalist.data.datasource.UsageProvider
 import com.protas.dopaminaminimalist.data.ai.AddictionAnalyzer
 import com.protas.dopaminaminimalist.data.repository.VicioRepository
-import com.protas.dopaminaminimalist.ui.screens.settings.HomeViewModel
+import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
 import com.protas.dopaminaminimalist.onboarding.OnBoardingScreen
 // Importamos tu nuevo gestor de permisos y las extensiones
@@ -20,7 +20,7 @@ import com.protas.dopaminaminimalist.ui.screens.permission.PermissionManagerScre
 import com.protas.dopaminaminimalist.ui.screens.permission.getNextPermissionStep
 import com.protas.dopaminaminimalist.ui.screens.permission.PermissionStep
 import com.protas.dopaminaminimalist.ui.navigation.EnfocaApp
-import com.protas.dopaminaminimalist.ui.screens.settings.HomeViewModelFactory
+import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
