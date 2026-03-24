@@ -27,9 +27,9 @@ class AddictionAnalyzer(private val context: Context) {
     private fun loadModelFile(): MappedByteBuffer {
         val assetFileDescriptor = context.assets.openFd("model_vicio_pro.tflite")
         return assetFileDescriptor.use {
-            val fileInputStream = FileInputStream(it.fileDescriptor)
-            val fileChannel = fileInputStream.channel
-            fileChannel.map(FileChannel.MapMode.READ_ONLY, it.startOffset, it.declaredLength)
+            FileInputStream(it.fileDescriptor).use { fis ->
+                fis.channel.map(FileChannel.MapMode.READ_ONLY, it.startOffset, it.declaredLength)
+            }
         }
     }
 
