@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.protas.dopaminaminimalist.data.datasource.UsageProvider
 import com.protas.dopaminaminimalist.data.ai.AddictionAnalyzer
 import com.protas.dopaminaminimalist.data.repository.VicioRepository
+import com.protas.dopaminaminimalist.onboarding.OnBoardingPreferences
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
 import com.protas.dopaminaminimalist.onboarding.OnBoardingScreen
@@ -33,9 +34,6 @@ class MainActivity : ComponentActivity() {
     private val provider by lazy { UsageProvider(this) }
     private val repository by lazy { VicioRepository(analyzer, provider) }
 
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //prepara el ViewModel con el repository listo para dárselo a la UI
@@ -43,43 +41,42 @@ class MainActivity : ComponentActivity() {
         val viewModel: HomeViewModel by viewModels { factory }
         setContent {
             DopaminaMinimalistTheme {
+                // SOLUCIÓN 1: Crear el NavController
                 val navController = rememberNavController()
 
-                NavHost(
-                    navController = navController,
-                    startDestination = "onboarding_screen"//destinacion inicial
-                ) {
-                    /* PANTALLA A: Políticas de privacidad
-                    Como OnBoardingScreen no necesita datos de uso de apps
-                    solo necesita el navController para saber a dónde navegar
-                    y en cambio el viewModel contiene datos de monitoreo de apps,
-                    y en la pantalla de onboarding todavía no se necesita nada de eso.
+                val context = LocalContext.current
+                val dataStore = OnBoardingPreferences(context)
 
-                    */
-                    composable("onboarding_screen") {
-                        OnBoardingScreen(navController)
-                    }
+                // SOLUCIÓN 2: Asegúrate de que el import arriba sea:
+                // import androidx.compose.runtime.collectAsState
+                val isOnboardingCompleted by dataStore.getBoarding.collectAsState(initial = null)
 
-                    // PANTALLA B: Flujo principal con validación de permisos
-                    composable("main_flow") {
-                        val context = LocalContext.current
+                if (isOnboardingCompleted != null) {
+                    val startDestination = if (isOnboardingCompleted == true) "main_flow" else "onboarding_screen"
 
-                        // Verifica en tiempo real si el usuario ya otorgó todos los permisos necesarios
-                        var allPermsGranted by remember {
-                            mutableStateOf(getNextPermissionStep(context) == PermissionStep.ALL_GRANTED)
+                    NavHost(
+                        navController = navController,
+                        startDestination = startDestination
+                    ) {
+                        composable("onboarding_screen") {
+                            OnBoardingScreen(navController)
                         }
-                        // BIFURCACIÓN: permisos completos → app | permisos faltantes → wizard
-                        if (allPermsGranted) {
-                            // Si_todo está ok, entramos a la app (enfocaAPP)
-                            EnfocaApp(viewModel = viewModel)
-                        } else {
 
-                            // Cuando el wizard termina, actualiza el estado y entra a la app
-                            PermissionManagerScreen(
-                                onAllPermissionsGranted = {
-                                    allPermsGranted = true
-                                }
-                            )
+                        composable("main_flow") {
+                            val currentContext = LocalContext.current
+                            var allPermsGranted by remember {
+                                mutableStateOf(getNextPermissionStep(currentContext) == PermissionStep.ALL_GRANTED)
+                            }
+
+                            if (allPermsGranted) {
+                                EnfocaApp(viewModel = viewModel)
+                            } else {
+                                PermissionManagerScreen(
+                                    onAllPermissionsGranted = {
+                                        allPermsGranted = true
+                                    }
+                                )
+                            }
                         }
                     }
                 }

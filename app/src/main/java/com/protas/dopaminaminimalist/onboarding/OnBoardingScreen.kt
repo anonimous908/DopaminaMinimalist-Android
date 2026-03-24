@@ -22,7 +22,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 
@@ -122,7 +121,7 @@ fun OnBoardingScreen(navController: NavController) {
                 Button(
                     onClick = {
                         scope.launch {
-                            //Función para guardar que YA lo vimos en StoreBoarding
+                            // 1. Guarda que el usuario ya pasó por aquí
                             dataStore.saveBoarding(true)
                             // Dentro de tu OnBoardingScreen.kt, en el onClick del botón:
                             navController.navigate("main_flow") {

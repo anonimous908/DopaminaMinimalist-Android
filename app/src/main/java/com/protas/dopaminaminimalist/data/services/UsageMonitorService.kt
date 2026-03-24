@@ -21,7 +21,7 @@ import java.util.TreeMap
 
 class UsageMonitorService : Service() {
 
-    private val CHECK_INTERVAL = 2000L // Chequear cada 2 segundos (Tiempo real)
+    private val CHECK_INTERVAL = 600000L // 10 minutos (10 * 60 * 1000 ms)
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "vicio_channel_id"
 
