@@ -70,7 +70,7 @@ class UsageProvider(private val context: Context) {
                     catSocial -> statsVector[0] += timeInHours
                     catGame, catVideo, catAudio -> statsVector[1] += timeInHours
                     catProductivity -> statsVector[2] += timeInHours
-                    else -> statsVector[19] += timeInHours
+                    else -> statsVector[3] += timeInHours
                 }
             }
         }
