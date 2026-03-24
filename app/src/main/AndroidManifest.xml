@@ -43,7 +43,7 @@
     <!-- Sobreescribe allowBackup si hay conflicto con dependencias -->
     <!-- Tema visual global de la app -->
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_enfoca_app_logo"
