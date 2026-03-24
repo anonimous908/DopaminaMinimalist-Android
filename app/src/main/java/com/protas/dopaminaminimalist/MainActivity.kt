@@ -41,14 +41,12 @@ class MainActivity : ComponentActivity() {
         val viewModel: HomeViewModel by viewModels { factory }
         setContent {
             DopaminaMinimalistTheme {
-                // SOLUCIÓN 1: Crear el NavController
+                //  Crear el NavController
                 val navController = rememberNavController()
 
                 val context = LocalContext.current
                 val dataStore = OnBoardingPreferences(context)
 
-                // SOLUCIÓN 2: Asegúrate de que el import arriba sea:
-                // import androidx.compose.runtime.collectAsState
                 val isOnboardingCompleted by dataStore.getBoarding.collectAsState(initial = null)
 
                 if (isOnboardingCompleted != null) {
@@ -61,7 +59,7 @@ class MainActivity : ComponentActivity() {
                         composable("onboarding_screen") {
                             OnBoardingScreen(navController)
                         }
-
+                        //pide permisos y navega a la pantalla principal
                         composable("main_flow") {
                             val currentContext = LocalContext.current
                             var allPermsGranted by remember {
