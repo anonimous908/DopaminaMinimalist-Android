@@ -14,16 +14,23 @@ import com.protas.dopaminaminimalist.ui.screens.progreso.ProgresoScreen
 import com.protas.dopaminaminimalist.ui.screens.home.HomeScreen
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 // IMPORTAMOS NUESTROS COLORES CENTRALIZADOS
-import com.protas.dopaminaminimalist.ui.theme.* @Composable
+import com.protas.dopaminaminimalist.ui.theme.*
+@Composable
 fun EnfocaApp(viewModel: HomeViewModel) {
+    //esta línea detecta el cambio y ordena
+    //a toda la pantalla actualizarse con los nuevos números.
     val uiState by viewModel.uiState.collectAsState()
+    //Crea una variable local que recuerda qué pestaña
+    // está viendo el usuario actualmente (por defecto, "home").
     var tab by remember { mutableStateOf("home") }
+
     val activeWeapons = remember { mutableStateMapOf<String, Boolean>() }
+    // contador dinámico
     val activeCount = activeWeapons.values.count { it }
 
     val score = (uiState.scoreVicio * 100).toInt()
 
-    // USAMOS LAS CONSTANTES DE COLOR.KT EN LUGAR DE HEXADECIMALES
+
     val levelColor = when {
         score < 40 -> VicioBajo
         score < 70 -> VicioMedio
