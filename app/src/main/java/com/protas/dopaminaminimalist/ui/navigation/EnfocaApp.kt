@@ -42,7 +42,7 @@ fun EnfocaApp(viewModel: HomeViewModel) {
         score < 70 -> "Cuidado 🟡"
         else       -> "Peligro 🔴"
     }
-
+    //Surface funciona como contenedor base de la UI.
     Surface(color = BgPage, modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -75,9 +75,9 @@ fun EnfocaApp(viewModel: HomeViewModel) {
             }
 
             BottomNav(
-                selected = tab,
-                onSelect = { tab = it },
-                modifier = Modifier.align(Alignment.BottomCenter)
+                selected = tab,//Le dice al BottomNav cuál pestaña está activa actualmente
+                onSelect = { tab = it },//Cuando el usuario toca un ícono, el BottomNav llama esta función ("home", "armas", o "progreso")
+                modifier = Modifier.align(Alignment.BottomCenter)//Le dice que se pegue al centro inferior de la pantalla.
             )
         }
     }
