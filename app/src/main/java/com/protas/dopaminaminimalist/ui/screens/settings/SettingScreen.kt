@@ -30,9 +30,12 @@ data class DefenseOption(
 @OptIn(ExperimentalMaterial3Api::class) // Necesario para LargeTopAppBar
 @Composable
 fun SettingsScreen(viewModel: HomeViewModel) {
-    // ESTADO: Aquí guardamos si los switches están activos
-    // (En producción usarías DataStore o ViewModel)
-    val options = remember { mutableStateListOf(
+    // 1. ESCUCHAR EL DISCO: Obtenemos el mapa de ajustes en tiempo real
+    val settings by viewModel.settingsState.collectAsState()
+
+    // 2. DEFINICIÓN VISUAL: Mantenemos los textos e iconos,
+    // pero el valor 'isEnabled' vendrá del ViewModel.
+    val defenseOptions = listOf(
         DefenseOption("notify", "👁️ Vigilancia Activa", "Notificar cada 5 min de uso", Icons.Default.Notifications),
         DefenseOption("barrier", "🚧 Barrera de 10s", "Mantener pulsado para entrar", Icons.Default.Lock),
         DefenseOption("grayscale", "🌑 Modo Grises", "Hacer la pantalla aburrida", Icons.Default.BrightnessMedium),
@@ -41,39 +44,38 @@ fun SettingsScreen(viewModel: HomeViewModel) {
         DefenseOption("stats", "📊 HUD en Pantalla", "Ver contador flotante", Icons.Default.Analytics),
         DefenseOption("night", "🌙 Toque de Queda", "Bloqueo automático 11 PM", Icons.Default.Nightlight),
         DefenseOption("kill", "💀 Muerte Súbita", "Cerrar app a la fuerza", Icons.Default.Dangerous)
-    )}
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212)) // Fondo Cyberpunk Oscuro
+            .background(Color(0xFF121212))
             .padding(16.dp)
     ) {
         Text(
-            text = "Sistema De Guerra A La Dopamina Barata",
+            text = "Sistema De Guerra",
             color = Color.White,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(options) { option ->
-                DefenseCard(option) { newState ->
-                    // Aquí actualizamos el estado y activamos/desactivamos el servicio
-                    val index = options.indexOf(option)
-                    options[index] = option.copy(isEnabled = newState)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(defenseOptions) { option ->
+                // 3. VINCULACIÓN: Buscamos si el ID está activo en el DataStore
+                val isEnabled = settings[option.id] ?: false
 
-                    // TODO: Aquí llamarías a tu ViewModel o Service
-                    // if (option.id == "notify" && newState) startService()
-                }
+                DefenseCard(
+                    option = option.copy(isEnabled = isEnabled),
+                    onToggle = { newState ->
+                        // 4. ACCIÓN REAL: Guardamos el cambio en el disco
+                        viewModel.toggleSetting(option.id, newState)
+                    }
+                )
             }
         }
     }
 }
-
 @Composable
 fun DefenseCard(option: DefenseOption, onToggle: (Boolean) -> Unit) {
     Card(

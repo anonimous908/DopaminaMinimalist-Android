@@ -17,26 +17,22 @@ import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.*
 @Composable
 fun EnfocaApp(viewModel: HomeViewModel) {
-    //esta línea detecta el cambio y ordena
-    //a toda la pantalla actualizarse con los nuevos números.
     val uiState by viewModel.uiState.collectAsState()
-    //Crea una variable local que recuerda qué pestaña
-    // está viendo el usuario actualmente (por defecto, "home").
+    // 1. RECOLECTAR EL ESTADO REAL: Ya no usamos el 'remember' local
+    val settings by viewModel.settingsState.collectAsState()
+
     var tab by remember { mutableStateOf("home") }
-
-    val activeWeapons = remember { mutableStateMapOf<String, Boolean>() }
-    // contador dinámico
-    val activeCount = activeWeapons.values.count { it }
-
     val score = (uiState.scoreVicio * 100).toInt()
-
-
+    // Calculamos cuántas armas hay activas en el DataStore actualmente
+    val activeCount = settings.values.count { it }
+// Lógica para el color del nivel según el score
     val levelColor = when {
         score < 40 -> VicioBajo
         score < 70 -> VicioMedio
         else       -> VicioAlto
     }
 
+    // Etiqueta visual según el nivel de vicio
     val levelLabel = when {
         score < 40 -> "Vas bien 🟢"
         score < 70 -> "Cuidado 🟡"
@@ -62,7 +58,7 @@ fun EnfocaApp(viewModel: HomeViewModel) {
                             isLoading = uiState.isLoading,
                             onGoToArmas = { tab = "armas" }
                         )
-                        "armas"    -> ArmasScreen(activeWeapons)
+                        "armas"    -> ArmasScreen(activeWeapons = settings, onToggle = { id, enabled -> viewModel.toggleSetting(id, enabled) })
                         "progreso" -> ProgresoScreen(
                             historyData = uiState.historyData,
                             promedioSemanal = uiState.promedioSemanal,

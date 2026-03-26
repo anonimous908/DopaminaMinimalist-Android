@@ -16,12 +16,14 @@ import com.protas.dopaminaminimalist.onboarding.OnBoardingPreferences
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
 import com.protas.dopaminaminimalist.onboarding.OnBoardingScreen
+import com.protas.dopaminaminimalist.data.dataStore.DefensePreferences
 // Importamos tu nuevo gestor de permisos y las extensiones
 import com.protas.dopaminaminimalist.ui.screens.permission.PermissionManagerScreen
 import com.protas.dopaminaminimalist.ui.screens.permission.getNextPermissionStep
 import com.protas.dopaminaminimalist.ui.screens.permission.PermissionStep
 import com.protas.dopaminaminimalist.ui.navigation.EnfocaApp
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModelFactory
+
 
 class MainActivity : ComponentActivity() {
 
@@ -30,6 +32,9 @@ class MainActivity : ComponentActivity() {
     // — prepara el motor de análisis de comportamiento de uso
     private val analyzer by lazy { AddictionAnalyzer(this) }
 
+    // 1. Crea la instancia de preferencias
+    private val defensePreferences by lazy { DefensePreferences(this) }
+
     // prepara el acceso a las estadísticas de uso de apps del sistema
     private val provider by lazy { UsageProvider(this) }
     private val repository by lazy { VicioRepository(analyzer, provider) }
@@ -37,7 +42,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //prepara el ViewModel con el repository listo para dárselo a la UI
-        val factory = HomeViewModelFactory(repository)
+        val factory = HomeViewModelFactory(repository, defensePreferences)
         val viewModel: HomeViewModel by viewModels { factory }
         setContent {
             DopaminaMinimalistTheme {

@@ -12,12 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.protas.dopaminaminimalist.data.datasource.AppUsageInfo
-import com.protas.dopaminaminimalist.ui.navigation.BgMuted
-import com.protas.dopaminaminimalist.ui.navigation.BorderBase
-import com.protas.dopaminaminimalist.ui.navigation.CardBg
-import com.protas.dopaminaminimalist.ui.navigation.TextMain
-import com.protas.dopaminaminimalist.ui.navigation.TextMuted
-import com.protas.dopaminaminimalist.ui.navigation.TextSub
+import com.protas.dopaminaminimalist.ui.theme.*
 
 val DAYS = listOf("L", "M", "M", "J", "V", "S", "H")
 

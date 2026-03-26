@@ -10,10 +10,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
-import com.protas.dopaminaminimalist.ui.navigation.BorderBase
-import com.protas.dopaminaminimalist.ui.navigation.TextMain
-import com.protas.dopaminaminimalist.ui.navigation.TextMuted
-import com.protas.dopaminaminimalist.ui.navigation.TextSub
+import com.protas.dopaminaminimalist.ui.theme.*
 
 data class Weapon(
     val id: String,
@@ -25,34 +22,33 @@ data class Weapon(
 
 val WEAPONS = listOf(
     Weapon("barrera", "⏱️", "Barrera de 10s",
-        "Espera antes de entrar a una app", Color(0xFF4F46E5)),
+        "Espera antes de entrar a una app", ColorBarrera),
     Weapon("grises",  "🌫️", "Modo Grises",
-        "Pantalla sin color = menos tentación", Color(0xFF6B7280)),
+        "Pantalla sin color = menos tentación", TextSub),
     Weapon("monje",   "🧘", "Modo Monje",
-        "Bloqueo total de apps distractoras", Color(0xFF7C3AED)),
+        "Bloqueo total de apps distractoras", ColorMonje),
     Weapon("toque",   "🌙", "Toque de Queda",
-        "Todo se bloquea después de las 11 PM", Color(0xFF1D4ED8)),
+        "Todo se bloquea después de las 11 PM", ColorToque),
     Weapon("hud",     "📊", "Contador Flotante",
-        "Ves cuánto llevas en pantalla en tiempo real", Color(0xFF059669)),
+        "Ves cuánto llevas en pantalla en tiempo real",ColorHUD),
     Weapon("ia",      "🤖", "IA Directa",
-        "Te avisa cuando vas mal antes de que empeore", Color(0xFFDC2626)),
+        "Te avisa cuando vas mal antes de que empeore", ColorIA),
 )
 
 @Composable
-fun ArmasScreen(activeWeapons: MutableMap<String, Boolean>) {
+fun ArmasScreen(activeWeapons: Map<String, Boolean>,onToggle: (String, Boolean) -> Unit) {
     val activeCount = activeWeapons.values.count { it }
 
     Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-        Text("Tus retos activos", color = TextMain, fontSize = 22.sp,
-            fontWeight = FontWeight.Black)
+        Text("Tus retos activos", color = TextMain, fontSize = 22.sp, fontWeight = FontWeight.Black)
         Text("Activa las que quieras. Puedes cambiarlas cuando quieras.",
             color = TextSub, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
 
         Spacer(Modifier.height(16.dp))
 
-        val pillBg     = if (activeCount > 0) Color(0xFFECFDF5) else Color(0xFFFEF2F2)
-        val pillBorder = if (activeCount > 0) Color(0xFFBBF7D0) else Color(0xFFFECACA)
-        val pillText   = if (activeCount > 0) Color(0xFF065F46) else Color(0xFF991B1B)
+        val pillBg     = if (activeCount > 0) PillBgActive else PillBgInactive
+        val pillBorder = if (activeCount > 0) PillBorderActive else PillBorderInactive
+        val pillText   = if (activeCount > 0) PillTextActive  else PillTextInactive
         val pillLabel  = if (activeCount > 0)
             "✅ $activeCount arma${if (activeCount > 1) "s" else ""} encendida${if (activeCount > 1) "s" else ""}"
         else "⚠️ Ninguna arma activa"
@@ -76,7 +72,8 @@ fun ArmasScreen(activeWeapons: MutableMap<String, Boolean>) {
         Spacer(Modifier.height(16.dp))
 
         WEAPONS.forEach { weapon ->
-            val on = activeWeapons[weapon.id] == true
+            // 3. Obtenemos el estado real desde el mapa de DataStore
+            val on = activeWeapons[weapon.id] == false
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,7 +86,7 @@ fun ArmasScreen(activeWeapons: MutableMap<String, Boolean>) {
                         if (on) weapon.color.copy(alpha = 0.35f) else BorderBase,
                         RoundedCornerShape(20.dp))
                     .clickable {
-                        activeWeapons[weapon.id] = !(activeWeapons[weapon.id] ?: false)
+                        onToggle(weapon.id, !on)
                     }
                     .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -119,7 +116,7 @@ fun ArmasScreen(activeWeapons: MutableMap<String, Boolean>) {
                 Spacer(Modifier.width(14.dp))
                 Switch(
                     checked = on,
-                    onCheckedChange = { activeWeapons[weapon.id] = it },
+                    onCheckedChange = { newState -> onToggle(weapon.id, newState) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = weapon.color,
