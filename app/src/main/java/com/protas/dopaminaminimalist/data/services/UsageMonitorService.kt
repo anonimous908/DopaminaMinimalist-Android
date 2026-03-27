@@ -13,9 +13,15 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import androidx.core.app.NotificationCompat
 import com.protas.dopaminaminimalist.MainActivity
 import com.protas.dopaminaminimalist.barrier.BarrierActivity
+import com.protas.dopaminaminimalist.data.dataStore.DefensePreferences
 // import com.protas.dopaminaminimalist.presentation.BarrierActivity // Descomenta cuando tengas la BarrierActivity
 import java.util.TreeMap
 
@@ -24,6 +30,10 @@ class UsageMonitorService : Service() {
     private val CHECK_INTERVAL = 600000L // 10 minutos (10 * 60 * 1000 ms)
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "vicio_channel_id"
+
+    private lateinit var defensePrefs: DefensePreferences
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var currentSettings: Map<String, Boolean> = emptyMap()
 
     private lateinit var usageStatsManager: UsageStatsManager
     private val handler = Handler(Looper.getMainLooper())
@@ -41,7 +51,7 @@ class UsageMonitorService : Service() {
     override fun onCreate() {
         super.onCreate()
         usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-
+        defensePrefs = DefensePreferences(this)
         // 1. Crear el canal de notificaciones (Obligatorio Android 8+)
         crearCanalDeNotificacion()
 
@@ -51,11 +61,21 @@ class UsageMonitorService : Service() {
         // 3. Arrancar el loop de vigilancia
         handler.post(monitorRunnable)
         Log.d("VICIO_SERVICE", "👮 Servicio de Vigilancia Iniciado")
+
+        // Escuchar cambios en los toggles permanentemente
+        serviceScope.launch {
+            defensePrefs.getSettings.collect { settings ->
+                currentSettings = settings
+                Log.d("VICIO_SERVICE", "⚙️ Ajustes actualizados: $currentSettings")
+            }
+        }
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(monitorRunnable) // Detener el loop si se destruye
+        serviceScope.cancel() // Limpiar corrutinas al detener el servicio
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -72,7 +92,12 @@ class UsageMonitorService : Service() {
 
         val time = System.currentTimeMillis()
         // Consultamos apps usadas en los últimos 10 segundos
-        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time)
+        val stats =
+            usageStatsManager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                time - CHECK_INTERVAL, // <--- Ahora cubre toda la brecha desde el último escaneo
+                time
+            )
 
         if (stats != null && stats.isNotEmpty()) {
             val sortedMap = TreeMap<Long, android.app.usage.UsageStats>()
