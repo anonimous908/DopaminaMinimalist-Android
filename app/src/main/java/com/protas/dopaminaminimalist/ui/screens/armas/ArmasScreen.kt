@@ -21,17 +21,18 @@ data class Weapon(
 )
 
 val WEAPONS = listOf(
-    Weapon("barrera", "⏱️", "Barrera de 10s",
+    Weapon("barrier", "⏱️", "Barrera de 10s",
         "Espera antes de entrar a una app", ColorBarrera),
-    Weapon("grises",  "🌫️", "Modo Grises",
+    Weapon("grayscale",  "🌫️", "Modo Grises",
         "Pantalla sin color = menos tentación", TextSub),
-    Weapon("monje",   "🧘", "Modo Monje",
+    Weapon("monk",   "🧘", "Modo Monje",
         "Bloqueo total de apps distractoras", ColorMonje),
-    Weapon("toque",   "🌙", "Toque de Queda",
+    Weapon("night",   "🌙", "Toque de Queda",
         "Todo se bloquea después de las 11 PM", ColorToque),
-    Weapon("hud",     "📊", "Contador Flotante",
+    Weapon("stats",     "📊", "Contador Flotante",
         "Ves cuánto llevas en pantalla en tiempo real",ColorHUD),
-    Weapon("ia",      "🤖", "IA Directa",
+    // Asegúrate de que el ID de la IA coincida con una llave de DefensePreferences (ej. "notify")
+    Weapon("notify",      "🤖", "IA Directa",
         "Te avisa cuando vas mal antes de que empeore", ColorIA),
 )
 
@@ -72,8 +73,9 @@ fun ArmasScreen(activeWeapons: Map<String, Boolean>,onToggle: (String, Boolean) 
         Spacer(Modifier.height(16.dp))
 
         WEAPONS.forEach { weapon ->
-            // 3. Obtenemos el estado real desde el mapa de DataStore
-            val on = activeWeapons[weapon.id] == false
+            // Corrección: Evaluamos si el estado es 'true' (o false por defecto si es null)
+            val on = activeWeapons[weapon.id] == true
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

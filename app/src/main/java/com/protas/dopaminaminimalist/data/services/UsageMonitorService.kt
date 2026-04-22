@@ -118,6 +118,27 @@ class UsageMonitorService : Service() {
                 }
             }
         }
+        // Recordatorio motivacional cada 30 minutos si Modo Grises está activo
+        if (currentSettings["grayscale"] == true) {
+            val minutosTotal = System.currentTimeMillis() / (1000 * 60)
+            if (minutosTotal % 30 == 0L) {
+                val mensajes = listOf(
+                    "¿Sigues ahí? Tu cerebro merece un descanso. 🧠",
+                    "30 minutos más. ¿Realmente vale la pena?",
+                    "Sal un momento. El scroll puede esperar. 🌿"
+                )
+                val mensaje = mensajes.random()
+                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("⏸️ Momento de pausa")
+                    .setContentText(mensaje)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .build()
+                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.notify(System.currentTimeMillis().toInt(), notification)
+            }
+        }
     }
 
     private fun gestionarCastigo(pkgName: String, minutos: Long) {
@@ -131,7 +152,7 @@ class UsageMonitorService : Service() {
 
         // REGLA 2: ACTIVAR BARRERA (Opcional, descomentar cuando tengas la Activity)
 
-        if (minutos > 30) { // Si lleva más de 30 min, bloqueo duro
+        if (minutos > 30 && currentSettings["barrier"] == true) { // Si lleva más de 30 min, bloqueo duro
              val intent = Intent(this, BarrierActivity::class.java)
              intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
              startActivity(intent)

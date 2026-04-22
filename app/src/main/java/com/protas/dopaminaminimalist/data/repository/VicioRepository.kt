@@ -38,7 +38,7 @@ class VicioRepository(
 
             // Gráfica 7 días
             val grafica = ultimos30Dias.takeLast(7).map { dia ->
-                dia[0] + dia[1] + dia[2] + dia[19]
+                dia[0] + dia[1] + dia[2] + dia[3]
             }
 
             // Desglose por categoría

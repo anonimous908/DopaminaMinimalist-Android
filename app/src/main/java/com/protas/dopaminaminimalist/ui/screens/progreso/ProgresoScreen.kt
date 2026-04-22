@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.*
 import com.protas.dopaminaminimalist.data.datasource.AppUsageInfo
 import com.protas.dopaminaminimalist.ui.theme.*
 
-val DAYS = listOf("L", "M", "M", "J", "V", "S", "H")
+val DAYS = listOf("L", "M", "M", "J", "V", "S", "D")
 
 @Composable
 fun ProgresoScreen(
