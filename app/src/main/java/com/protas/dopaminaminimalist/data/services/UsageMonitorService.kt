@@ -22,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import java.util.TreeMap
 import javax.inject.Inject
+import android.provider.Settings
 
 @AndroidEntryPoint // Permite que Hilt inyecte dependencias en este servicio
 class UsageMonitorService : Service() {
@@ -128,6 +129,10 @@ class UsageMonitorService : Service() {
         }
     }
 
+
+
+
+
     private fun gestionarCastigo(pkgName: String, minutos: Long) {
         // Alerta cada 5 minutos
         if (minutos > 0 && minutos % 5 == 0L) {
@@ -139,10 +144,35 @@ class UsageMonitorService : Service() {
 
         // Bloqueo duro (Barrera)
         if (minutos > 30 && currentSettings["barrier"] == true) {
-            val intent = Intent(this, BarrierActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
+            // Verificamos si es Android 10+ y si NO tenemos el permiso de superposición
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
+                // El sistema no nos deja abrir la pantalla, mandamos alerta extrema
+                lanzarAlertaExtrema(pkgName, minutos)
+            } else {
+                // Tenemos permiso (o es un Android viejo), lanzamos la barrera
+                val intent = Intent(this, BarrierActivity::class.java).apply {
+                    // FLAG_ACTIVITY_CLEAR_TOP asegura que no abramos múltiples barreras infinitas
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                startActivity(intent)
+            }
         }
+    }
+
+    // Agrega esta nueva función justo debajo
+    private fun lanzarAlertaExtrema(pkgName: String, minutos: Long) {
+        val nombreApp = obtenerNombreBonito(pkgName)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("🛑 BLOQUEO DE EMERGENCIA")
+            .setContentText("Llevas $minutos min en $nombreApp. Abre la app para activar los permisos de bloqueo.")
+            .setSmallIcon(android.R.drawable.stat_sys_warning)
+            .setPriority(NotificationCompat.PRIORITY_MAX) // Hace que salga hasta arriba
+            .setVibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000)) // Vibración muy molesta
+            .setAutoCancel(true)
+            .build()
+
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
     private fun lanzarAlerta(pkgName: String, minutos: Long) {
