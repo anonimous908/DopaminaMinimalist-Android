@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -47,18 +49,11 @@ android {
 }
 
 dependencies {
-    // Agrega esto para tener acceso a TODOS los iconos (Extended)
-    implementation("androidx.compose.material:material-icons-extended:1.7.6")
-    // AGREGA ESTAS LÍNEAS (LiteRT 1.4.1 o superior)
-    // --- LiteRT (Compatible con Android 15 / 16 KB) ---
-    implementation("com.google.ai.edge.litert:litert:1.4.1")
-    implementation("com.google.ai.edge.litert:litert-api:1.4.1")
-    // implementation("com.google.ai.edge.litert:litert-gpu:1.4.1") // Descomenta solo si usas GPU
-
-    // BORRA ESTA LÍNEA (No existe aún):
-    // implementation("com.google.ai.edge.litert:litert-select-tf-ops:1.4.1")
-    // ¡CRÍTICO! Tu modelo usa GRU/LSTM, necesitas esta librería para las "Select Ops":
-
+    implementation(libs.material.icons.extended)
+    implementation(libs.litert)
+    implementation(libs.litert.api)
+    implementation(libs.navigation.compose)
+    implementation(libs.datastore.preferences)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -76,10 +71,15 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Navegación entre pantallas
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-    // Memoria local para guardar que ya aceptó las políticas
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+
+
+        // Hilt
+        implementation(libs.hilt.android)
+        ksp(libs.hilt.compiler) // si usas KSP
+        // o si usas kapt:
+        // kapt("com.google.dagger:hilt-compiler:2.51.1")
+
 
 }
 
