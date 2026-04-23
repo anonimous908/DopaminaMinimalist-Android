@@ -36,9 +36,12 @@ class VicioRepository(
                 Result.failure(e)
             }
 
-            // Gráfica 7 días
+            // Gráfica 7 días (Usando las nuevas constantes)
             val grafica = ultimos30Dias.takeLast(7).map { dia ->
-                dia[0] + dia[1] + dia[2] + dia[3]
+                dia[UsageProvider.IDX_SOCIAL] +
+                        dia[UsageProvider.IDX_VIDEO_JUEGOS_AUDIO] +
+                        dia[UsageProvider.IDX_PRODUCTIVIDAD] +
+                        dia[UsageProvider.IDX_OTROS]
             }
 
             // Desglose por categoría
@@ -49,20 +52,33 @@ class VicioRepository(
             // Estadísticas semana
             val ultimos7Dias = ultimos30Dias.takeLast(7)
             val dias = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
+
             val promedio = ultimos7Dias.map { dia ->
-                dia[0] + dia[1] + dia[2] + dia[19] // Social + Video + Productividad + Otros
+                dia[UsageProvider.IDX_SOCIAL] +
+                        dia[UsageProvider.IDX_VIDEO_JUEGOS_AUDIO] +
+                        dia[UsageProvider.IDX_PRODUCTIVIDAD] +
+                        dia[UsageProvider.IDX_DIA_COS]
             }.average().toFloat()
+
             val indiceDiaMasVicioso = ultimos7Dias.indices.maxByOrNull {
                 ultimos7Dias[it].sum()
             } ?: 0
             val diaMasVicioso = dias[indiceDiaMasVicioso % 7]
+
             val primeraMitad = ultimos7Dias.take(3).map { dia ->
-                dia[0] + dia[1] + dia[2] + dia[19]
+                dia[UsageProvider.IDX_SOCIAL] +
+                        dia[UsageProvider.IDX_VIDEO_JUEGOS_AUDIO] +
+                        dia[UsageProvider.IDX_PRODUCTIVIDAD] +
+                        dia[UsageProvider.IDX_DIA_COS]
             }.average().toFloat()
 
             val segundaMitad = ultimos7Dias.takeLast(3).map { dia ->
-                dia[0] + dia[1] + dia[2] + dia[19]
+                dia[UsageProvider.IDX_SOCIAL] +
+                        dia[UsageProvider.IDX_VIDEO_JUEGOS_AUDIO] +
+                        dia[UsageProvider.IDX_PRODUCTIVIDAD] +
+                        dia[UsageProvider.IDX_DIA_COS]
             }.average().toFloat()
+
             val tendencia = primeraMitad - segundaMitad
 
             DatosCompletos(score, grafica, topApps, desglose, promedio, diaMasVicioso, tendencia)

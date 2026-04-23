@@ -13,6 +13,7 @@ data class AppUsageInfo(
     val timeInHours: Float,
     val category: String
 )
+
 class UsageProvider(private val context: Context) {
 
     private val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -22,27 +23,101 @@ class UsageProvider(private val context: Context) {
     private val catVideo = 2
     private val catSocial = 4
     private val catProductivity = 7
-    // --- MÁQUINA DEL TIEMPO (30 DÍAS) ---
-    fun recuperarUltimos30Dias(): List<FloatArray> {
-        val listaHistorial = mutableListOf<FloatArray>()
-        val calendar = Calendar.getInstance()
 
-        for (i in 0 until 30) {
-            calendar.set(Calendar.HOUR_OF_DAY, 23)
-            calendar.set(Calendar.MINUTE, 59)
-            val end = calendar.timeInMillis
+    // --- CONSTANTES DEL MODELO DE IA ---
+    // Esto hace que el código sea profesional y fácil de mantener
+    companion object {
+        const val IDX_SOCIAL = 0
+        const val IDX_VIDEO_JUEGOS_AUDIO = 1
+        const val IDX_PRODUCTIVIDAD = 2
+        const val IDX_OTROS = 3
 
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            val start = calendar.timeInMillis
-
-            listaHistorial.add(0, consultarYProcesar(start, end))
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
-        }
-        return listaHistorial
+        // Variables de tiempo cíclico
+        const val IDX_HORA_SIN = 16
+        const val IDX_HORA_COS = 17
+        const val IDX_DIA_SIN = 18
+        const val IDX_DIA_COS = 19
     }
 
+    // --- MÁQUINA DEL TIEMPO (30 DÍAS) ---
+    // --- MÁQUINA DEL TIEMPO (30 DÍAS) OPTIMIZADA ---
+    fun recuperarUltimos30Dias(): List<FloatArray> {
+        val calendar = Calendar.getInstance()
 
+        // 1. Definimos el final (hoy a las 23:59:59)
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        val endTotal = calendar.timeInMillis
+
+        // 2. Definimos el inicio (hace 30 días a las 00:00:00)
+        calendar.add(Calendar.DAY_OF_YEAR, -29) // 29 días hacia atrás + hoy = 30 días
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        val startTotal = calendar.timeInMillis
+
+        // 3. ¡UNA SOLA LLAMADA AL SISTEMA! (El gran ahorro de batería y CPU)
+        val todasLasStats = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY, startTotal, endTotal
+        )
+
+        // 4. Preparamos 30 "cubetas" (arrays) vacías, una para cada día
+        val historial = Array(30) { FloatArray(20) }
+
+        // 5. Variables de tiempo cíclico (se calculan una sola vez)
+        val horaActual = Calendar.getInstance().get(Calendar.HOUR_OF_DAY).toFloat()
+        val diaActual = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).toFloat()
+        val horaSin = sin(2 * PI * horaActual / 24).toFloat()
+        val horaCos = cos(2 * PI * horaActual / 24).toFloat()
+        val diaSin = sin(2 * PI * diaActual / 7).toFloat()
+        val diaCos = cos(2 * PI * diaActual / 7).toFloat()
+
+        // 6. Acomodamos cada estadística que nos dio Android en su día correspondiente
+        todasLasStats.forEach { stats ->
+            // Calculamos a qué día pertenece basándonos en el timestamp
+            val diasDesdeInicio = ((stats.firstTimeStamp - startTotal) / (1000 * 60 * 60 * 24)).toInt()
+
+            // Nos aseguramos de que caiga dentro de nuestros 30 días
+            if (diasDesdeInicio in 0..29) {
+                val arrayIndex = diasDesdeInicio
+                val timeInHours = stats.totalTimeInForeground / (1000 * 60 * 60).toFloat()
+
+                if (timeInHours > 0.01f && !esAppDelSistema(stats.packageName)) {
+                    var category = getAppCategory(stats.packageName)
+                    if (category == -1) {
+                        category = adivinarCategoriaPorNombre(stats.packageName)
+                    }
+                    when (category) {
+                        catSocial -> historial[arrayIndex][IDX_SOCIAL] += timeInHours
+                        catGame, catVideo, catAudio -> historial[arrayIndex][IDX_VIDEO_JUEGOS_AUDIO] += timeInHours
+                        catProductivity -> historial[arrayIndex][IDX_PRODUCTIVIDAD] += timeInHours
+                        else -> historial[arrayIndex][IDX_OTROS] += timeInHours
+                    }
+                }
+            }
+        }
+
+        // 7. Aplicamos los topes (coerceIn) y variables derivadas a cada día
+        for (i in 0 until 30) {
+            historial[i][IDX_SOCIAL] = historial[i][IDX_SOCIAL].coerceIn(0f, 24f)
+            historial[i][IDX_VIDEO_JUEGOS_AUDIO] = historial[i][IDX_VIDEO_JUEGOS_AUDIO].coerceIn(0f, 24f)
+            historial[i][IDX_PRODUCTIVIDAD] = historial[i][IDX_PRODUCTIVIDAD].coerceIn(0f, 24f)
+            historial[i][IDX_OTROS] = historial[i][IDX_OTROS].coerceIn(0f, 24f)
+
+            // Asignamos las variables de tiempo cíclico
+            historial[i][IDX_HORA_SIN] = horaSin
+            historial[i][IDX_HORA_COS] = horaCos
+            historial[i][IDX_DIA_SIN] = diaSin
+            historial[i][IDX_DIA_COS] = diaCos
+
+            // Variables que necesita tu modelo TFLite
+            historial[i][5] = historial[i][IDX_SOCIAL] + (historial[i][IDX_VIDEO_JUEGOS_AUDIO] * 0.5f)
+            historial[i][4] = (historial[i][IDX_SOCIAL] + historial[i][IDX_VIDEO_JUEGOS_AUDIO]) * 0.2f
+        }
+
+        return historial.toList()
+    }
 
     fun obtenerDatosGrafica(): List<Float> {
         val ultimos30Dias = recuperarUltimos30Dias()
@@ -51,47 +126,6 @@ class UsageProvider(private val context: Context) {
     }
 
 
-
-    // --- PROCESADOR CENTRAL ---
-    private fun consultarYProcesar(start: Long, end: Long): FloatArray {
-        val statsVector = FloatArray(20)
-        val usageStats = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY, start, end
-        )
-
-        usageStats.forEach { stats ->
-            val timeInHours = stats.totalTimeInForeground / (1000 * 60 * 60).toFloat()
-            if (timeInHours > 0.01f && !esAppDelSistema(stats.packageName)) {
-                var category = getAppCategory(stats.packageName)
-                if (category == -1) {
-                    category = adivinarCategoriaPorNombre(stats.packageName)
-                }
-                when (category) {
-                    catSocial -> statsVector[0] += timeInHours
-                    catGame, catVideo, catAudio -> statsVector[1] += timeInHours
-                    catProductivity -> statsVector[2] += timeInHours
-                    else -> statsVector[3] += timeInHours
-                }
-                statsVector[0] = statsVector[0].coerceIn(0f, 24f)
-                statsVector[1] = statsVector[1].coerceIn(0f, 24f)
-                statsVector[2] = statsVector[2].coerceIn(0f, 24f)
-                statsVector[3] = statsVector[3].coerceIn(0f, 24f)
-            }
-        }
-        // Columnas de tiempo cíclico (necesarias para el modelo TFLite)
-        val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY).toFloat()
-        val dia = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).toFloat()
-
-        statsVector[16] = sin(2 * PI * hora / 24).toFloat()
-        statsVector[17] = cos(2 * PI * hora / 24).toFloat()
-        statsVector[18] = sin(2 * PI * dia / 7).toFloat()
-        statsVector[19] = cos(2 * PI * dia / 7).toFloat()
-
-        statsVector[5] = statsVector[0] + (statsVector[1] * 0.5f)
-        statsVector[4] = (statsVector[0] + statsVector[1]) * 0.2f
-
-        return statsVector
-    }
     // --- DICCIONARIO ACTUALIZADO CON TUS APPS ---
     private fun adivinarCategoriaPorNombre(pkg: String): Int {
         val name = pkg.lowercase()
@@ -105,20 +139,20 @@ class UsageProvider(private val context: Context) {
             name.contains("telegram") -> catSocial
             name.contains("reddit") -> catSocial
             name.contains("discord") -> catSocial
-            name.contains("browser") -> catSocial // Brave, Chrome a veces se usan para vicio
+            name.contains("browser") -> catSocial
             name.contains("chrome") -> catSocial
 
             // VIDEO / JUEGOS
             name.contains("youtube") -> catVideo
             name.contains("netflix") -> catVideo
-            name.contains("steam") -> catGame    // <--- AGREGADO
-            name.contains("tycoon") -> catGame   // <--- AGREGADO (Prison Empire)
-            name.contains("games") -> catGame    // <--- AGREGADO (General)
+            name.contains("steam") -> catGame
+            name.contains("tycoon") -> catGame
+            name.contains("games") -> catGame
 
             // PRODUCTIVIDAD
-            name.contains("chatgpt") -> catProductivity // <--- AGREGADO
-            name.contains("classroom") -> catProductivity // <--- AGREGADO
-            name.contains("investing") -> catProductivity // <--- AGREGADO
+            name.contains("chatgpt") -> catProductivity
+            name.contains("classroom") -> catProductivity
+            name.contains("investing") -> catProductivity
             name.contains("calculator") -> catProductivity
 
             else -> -1
@@ -126,7 +160,6 @@ class UsageProvider(private val context: Context) {
     }
 
     private fun esAppDelSistema(pkg: String): Boolean {
-        // Filtramos cosas técnicas que no son vicio
         return pkg.contains("com.android.systemui") ||
                 pkg.contains("launcher") ||
                 pkg.contains("googlequicksearchbox") ||
@@ -142,6 +175,7 @@ class UsageProvider(private val context: Context) {
             -1
         }
     }
+
     fun obtenerTopApps(): List<AppUsageInfo> {
         val calendar = Calendar.getInstance()
         val endTime = calendar.timeInMillis
@@ -178,8 +212,6 @@ class UsageProvider(private val context: Context) {
                 AppUsageInfo(stats.packageName, appName, timeInHours, category)
             }
             .sortedByDescending { it.timeInHours }
-            .take(5) // Top 5 apps
+            .take(5)
     }
-
-
 }
