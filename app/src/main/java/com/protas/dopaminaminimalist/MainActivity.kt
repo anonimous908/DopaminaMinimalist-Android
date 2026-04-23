@@ -9,49 +9,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.protas.dopaminaminimalist.data.datasource.UsageProvider
-import com.protas.dopaminaminimalist.data.ai.AddictionAnalyzer
-import com.protas.dopaminaminimalist.data.repository.VicioRepository
 import com.protas.dopaminaminimalist.onboarding.OnBoardingPreferences
 import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModel
 import com.protas.dopaminaminimalist.ui.theme.DopaminaMinimalistTheme
 import com.protas.dopaminaminimalist.onboarding.OnBoardingScreen
-import com.protas.dopaminaminimalist.data.dataStore.DefensePreferences
-// Importamos tu nuevo gestor de permisos y las extensiones
+// Importamos el gestor de permisos
 import com.protas.dopaminaminimalist.ui.screens.permission.PermissionManagerScreen
 import com.protas.dopaminaminimalist.ui.screens.permission.getNextPermissionStep
 import com.protas.dopaminaminimalist.ui.screens.permission.PermissionStep
 import com.protas.dopaminaminimalist.ui.navigation.EnfocaApp
-import com.protas.dopaminaminimalist.ui.screens.home.HomeViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint // 1. CRITICO: Esta anotación permite que Hilt inyecte cosas aquí
 class MainActivity : ComponentActivity() {
 
-    // Inicialización de dependencias (Lazy para optimizar recursos)
-
-    // — prepara el motor de análisis de comportamiento de uso
-    private val analyzer by lazy { AddictionAnalyzer(this) }
-
-    // 1. Crea la instancia de preferencias
-    private val defensePreferences by lazy { DefensePreferences(this) }
-
-    // prepara el acceso a las estadísticas de uso de apps del sistema
-    private val provider by lazy { UsageProvider(this) }
-    private val repository by lazy { VicioRepository(analyzer, provider) }
+    // 2. Hilt se encarga de todo el "trabajo sucio".
+    // Ya no necesitas 'lazy analyzer', 'lazy repository', etc.
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //prepara el ViewModel con el repository listo para dárselo a la UI
-        val factory = HomeViewModelFactory(repository, defensePreferences)
-        val viewModel: HomeViewModel by viewModels { factory }
+
+        // 3. ¡La "HomeViewModelFactory" ha muerto! Ya no necesitas crearla aquí.
+
         setContent {
             DopaminaMinimalistTheme {
-                //  Crear el NavController
                 val navController = rememberNavController()
-
                 val context = LocalContext.current
-                val dataStore = OnBoardingPreferences(context)
 
+                // Nota: OnBoardingPreferences aún se crea manual aquí,
+                // pero lo principal (la lógica de vicio e IA) ya está en el almacén.
+                val dataStore = OnBoardingPreferences(context)
                 val isOnboardingCompleted by dataStore.getBoarding.collectAsState(initial = null)
 
                 if (isOnboardingCompleted != null) {
@@ -64,7 +52,6 @@ class MainActivity : ComponentActivity() {
                         composable("onboarding_screen") {
                             OnBoardingScreen(navController)
                         }
-                        //pide permisos y navega a la pantalla principal
                         composable("main_flow") {
                             val currentContext = LocalContext.current
                             var allPermsGranted by remember {
@@ -72,6 +59,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             if (allPermsGranted) {
+                                // Pasamos el viewModel que Hilt nos entregó listo
                                 EnfocaApp(viewModel = viewModel)
                             } else {
                                 PermissionManagerScreen(

@@ -61,15 +61,14 @@ fun VicioCard(score: Float) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Box(contentAlignment = Alignment.Center) {
-                // Círculo de progreso real
+                // Círculo de fondo (gris tenue)
                 CircularProgressIndicator(
-                    progress = animatedProgress,
+                    progress = 1f,
                     modifier = Modifier.size(160.dp),
-                    color = colorByScore,
+                    color = MaterialTheme.colorScheme.outlineVariant,
                     strokeWidth = 12.dp,
                     strokeCap = StrokeCap.Round
                 )
-
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${(animatedProgress * 100).toInt()}%",

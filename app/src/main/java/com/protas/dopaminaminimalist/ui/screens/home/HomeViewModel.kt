@@ -8,11 +8,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn // Importante
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class HomeViewModel(
+@HiltViewModel // 1. Le dice a Hilt que este ViewModel usará el almacén
+class HomeViewModel @Inject constructor( // 2. @Inject le pide a Hilt que traiga las herramientas
     private val repository: VicioRepository,
     private val defensePrefs: DefensePreferences
 ) : ViewModel() {

@@ -13,34 +13,39 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import androidx.core.app.NotificationCompat
 import com.protas.dopaminaminimalist.MainActivity
 import com.protas.dopaminaminimalist.barrier.BarrierActivity
 import com.protas.dopaminaminimalist.data.dataStore.DefensePreferences
-// import com.protas.dopaminaminimalist.presentation.BarrierActivity // Descomenta cuando tengas la BarrierActivity
+import com.protas.dopaminaminimalist.data.datasource.UsageProvider
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
 import java.util.TreeMap
+import javax.inject.Inject
 
+@AndroidEntryPoint // Permite que Hilt inyecte dependencias en este servicio
 class UsageMonitorService : Service() {
 
-    private val CHECK_INTERVAL = 600000L // 10 minutos (10 * 60 * 1000 ms)
+    // --- Configuración del Servicio ---
+    private val CHECK_INTERVAL = 600000L // 10 minutos
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "vicio_channel_id"
 
-    private lateinit var defensePrefs: DefensePreferences
+    // --- Dependencias Inyectadas (Hilt las entrega listas) ---
+    @Inject
+    lateinit var usageProvider: UsageProvider
+
+    @Inject
+    lateinit var defensePreferences: DefensePreferences
+
+    // --- Propiedades de Control ---
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var currentSettings: Map<String, Boolean> = emptyMap()
-
     private lateinit var usageStatsManager: UsageStatsManager
     private val handler = Handler(Looper.getMainLooper())
-
-    // Evitar spam de notificaciones (guardamos el último minuto notificado)
     private var ultimoMinutoNotificado: Long = -1
 
+    // --- Bucle de Vigilancia ---
     private val monitorRunnable = object : Runnable {
         override fun run() {
             escanearVicio()
@@ -50,54 +55,51 @@ class UsageMonitorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        defensePrefs = DefensePreferences(this)
-        // 1. Crear el canal de notificaciones (Obligatorio Android 8+)
-        crearCanalDeNotificacion()
 
-        // 2. Iniciar el servicio en primer plano para que Android no lo mate
+        // Inicializamos el gestor del sistema
+        usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
+        // IMPORTANTE: Ya no inicializamos defensePreferences manualmente.
+        // Hilt ya lo hizo antes de entrar a onCreate.
+
+        crearCanalDeNotificacion()
         startForeground(NOTIFICATION_ID, crearNotificacionPersistente())
 
-        // 3. Arrancar el loop de vigilancia
         handler.post(monitorRunnable)
-        Log.d("VICIO_SERVICE", "👮 Servicio de Vigilancia Iniciado")
+        Log.d("VICIO_SERVICE", "👮 Servicio de Vigilancia Iniciado con Hilt")
 
-        // Escuchar cambios en los toggles permanentemente
+        // Escuchamos cambios en los ajustes de forma reactiva
         serviceScope.launch {
-            defensePrefs.getSettings.collect { settings ->
+            defensePreferences.getSettings.collect { settings ->
                 currentSettings = settings
                 Log.d("VICIO_SERVICE", "⚙️ Ajustes actualizados: $currentSettings")
             }
         }
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY // El servicio se reinicia si el sistema lo mata
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(monitorRunnable) // Detener el loop si se destruye
-        serviceScope.cancel() // Limpiar corrutinas al detener el servicio
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Si el sistema mata el servicio, que lo reviva automáticamente
-        return START_STICKY
+        handler.removeCallbacks(monitorRunnable)
+        serviceScope.cancel()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    // --- LÓGICA DE DETECCIÓN ---
+    // --- Lógica de Detección y Castigo ---
 
     private fun escanearVicio() {
         if (!tienePermisoUsageStats()) return
 
         val time = System.currentTimeMillis()
-        // Consultamos apps usadas en los últimos 10 segundos
-        val stats =
-            usageStatsManager.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                time - CHECK_INTERVAL, // <--- Ahora cubre toda la brecha desde el último escaneo
-                time
-            )
+        val stats = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY,
+            time - CHECK_INTERVAL,
+            time
+        )
 
         if (stats != null && stats.isNotEmpty()) {
             val sortedMap = TreeMap<Long, android.app.usage.UsageStats>()
@@ -109,40 +111,25 @@ class UsageMonitorService : Service() {
                 val currentApp = sortedMap[sortedMap.lastKey()]
                 val pkgName = currentApp!!.packageName
 
-                // Si la app actual es viciosa...
                 if (esAppViciosa(pkgName)) {
                     val minutosHoy = currentApp.totalTimeInForeground / (1000 * 60)
                     Log.d("VICIO_SERVICE", "🚨 Detectado: $pkgName | Tiempo: $minutosHoy min")
-
                     gestionarCastigo(pkgName, minutosHoy)
                 }
             }
         }
-        // Recordatorio motivacional cada 30 minutos si Modo Grises está activo
+
+        // Recordatorio motivacional (Grayscale)
         if (currentSettings["grayscale"] == true) {
             val minutosTotal = System.currentTimeMillis() / (1000 * 60)
             if (minutosTotal % 30 == 0L) {
-                val mensajes = listOf(
-                    "¿Sigues ahí? Tu cerebro merece un descanso. 🧠",
-                    "30 minutos más. ¿Realmente vale la pena?",
-                    "Sal un momento. El scroll puede esperar. 🌿"
-                )
-                val mensaje = mensajes.random()
-                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("⏸️ Momento de pausa")
-                    .setContentText(mensaje)
-                    .setSmallIcon(android.R.drawable.ic_dialog_info)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .build()
-                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                manager.notify(System.currentTimeMillis().toInt(), notification)
+                enviarRecordatorioMotivacional()
             }
         }
     }
 
     private fun gestionarCastigo(pkgName: String, minutos: Long) {
-        // REGLA 1: Notificar cada 5 minutos (5, 10, 15...)
+        // Alerta cada 5 minutos
         if (minutos > 0 && minutos % 5 == 0L) {
             if (minutos != ultimoMinutoNotificado) {
                 lanzarAlerta(pkgName, minutos)
@@ -150,26 +137,23 @@ class UsageMonitorService : Service() {
             }
         }
 
-        // REGLA 2: ACTIVAR BARRERA (Opcional, descomentar cuando tengas la Activity)
-
-        if (minutos > 30 && currentSettings["barrier"] == true) { // Si lleva más de 30 min, bloqueo duro
-             val intent = Intent(this, BarrierActivity::class.java)
-             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-             startActivity(intent)
+        // Bloqueo duro (Barrera)
+        if (minutos > 30 && currentSettings["barrier"] == true) {
+            val intent = Intent(this, BarrierActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
         }
-
     }
 
     private fun lanzarAlerta(pkgName: String, minutos: Long) {
         val nombreApp = obtenerNombreBonito(pkgName)
-
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("⚠️ ALERTA DE DOPAMINA")
             .setContentText("Llevas $minutos minutos en $nombreApp. ¡Cierra eso!")
-            .setSmallIcon(android.R.drawable.stat_sys_warning) // Cambia por tu icono: R.drawable.ic_logo
+            .setSmallIcon(android.R.drawable.stat_sys_warning)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setVibrate(longArrayOf(0, 500, 200, 500)) // Vibración molesta
+            .setVibrate(longArrayOf(0, 500, 200, 500))
             .setAutoCancel(true)
             .build()
 
@@ -177,19 +161,31 @@ class UsageMonitorService : Service() {
         manager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
-    // --- UTILIDADES ---
+    private fun enviarRecordatorioMotivacional() {
+        val mensajes = listOf(
+            "¿Sigues ahí? Tu cerebro merece un descanso. 🧠",
+            "30 minutos más. ¿Realmente vale la pena?",
+            "Sal un momento. El scroll puede esperar. 🌿"
+        )
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("⏸️ Momento de pausa")
+            .setContentText(mensajes.random())
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+
+    // --- Utilidades ---
 
     private fun esAppViciosa(pkg: String): Boolean {
         val p = pkg.lowercase()
-        // Lista negra hardcodeada (luego puedes sacarla de una base de datos)
-        return p.contains("tiktok") ||
-                p.contains("instagram") ||
-                p.contains("facebook") ||
-                p.contains("youtube") ||
-                p.contains("twitter") ||
-                p.contains("twitch")
+        return p.contains("tiktok") || p.contains("instagram") ||
+                p.contains("facebook") || p.contains("youtube") ||
+                p.contains("twitter") || p.contains("twitch")
     }
-
 
     private fun obtenerNombreBonito(pkg: String): String {
         return when {
@@ -203,7 +199,6 @@ class UsageMonitorService : Service() {
     }
 
     private fun crearNotificacionPersistente(): Notification {
-        // Notificación fija que dice "Te estoy vigilando" (Obligatoria para Foreground Service)
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
@@ -212,7 +207,7 @@ class UsageMonitorService : Service() {
             .setContentText("Protegiendo tu atención en segundo plano.")
             .setSmallIcon(android.R.drawable.ic_secure)
             .setContentIntent(pendingIntent)
-            .setOngoing(true) // No se puede quitar deslizando
+            .setOngoing(true)
             .build()
     }
 
@@ -221,7 +216,7 @@ class UsageMonitorService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Vigilancia de Dopamina",
-                NotificationManager.IMPORTANCE_LOW // Low para la persistente, High para las alertas
+                NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
@@ -229,7 +224,6 @@ class UsageMonitorService : Service() {
     }
 
     private fun tienePermisoUsageStats(): Boolean {
-        // Verificación rápida de permiso (aunque se supone que ya lo pediste en la UI)
         val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
         val mode = appOps.checkOpNoThrow(
             android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
@@ -237,6 +231,4 @@ class UsageMonitorService : Service() {
         )
         return mode == android.app.AppOpsManager.MODE_ALLOWED
     }
-
-
 }

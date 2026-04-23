@@ -37,6 +37,7 @@
     <!-- Sobreescribe allowBackup si hay conflicto con dependencias -->
     <!-- Tema visual global de la app -->
     <application
+        android:name=".EnfocaApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
