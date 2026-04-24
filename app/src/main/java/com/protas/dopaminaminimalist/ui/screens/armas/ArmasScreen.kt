@@ -40,7 +40,13 @@ val WEAPONS = listOf(
 fun ArmasScreen(activeWeapons: Map<String, Boolean>,onToggle: (String, Boolean) -> Unit) {
     val activeCount = activeWeapons.values.count { it }
 
-    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+    // AQUÍ ESTÁ LA CORRECCIÓN: Se agregó fillMaxSize y verticalScroll
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
         Text("Tus retos activos", color = TextMain, fontSize = 22.sp, fontWeight = FontWeight.Black)
         Text("Activa las que quieras. Puedes cambiarlas cuando quieras.",
             color = TextSub, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)

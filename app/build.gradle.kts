@@ -69,18 +69,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-
-
-
-        // Hilt
-        implementation(libs.hilt.android)
-        ksp(libs.hilt.compiler) // si usas KSP
-        // o si usas kapt:
-        // kapt("com.google.dagger:hilt-compiler:2.51.1")
-
-
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }
-
-
-
-

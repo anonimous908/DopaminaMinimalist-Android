@@ -9,6 +9,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.protas.dopaminaminimalist.data.datasource.AppUsageInfo
 import com.protas.dopaminaminimalist.ui.theme.*
@@ -24,7 +25,12 @@ fun HomeScreen(
     isLoading: Boolean,
     onGoToArmas: () -> Unit
 ) {
-    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
 
         if (isLoading) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -63,7 +69,8 @@ fun HomeScreen(
 
         // Card diagnóstico
         val peorApp = topApps.firstOrNull()
-        val horasAyer = peorApp?.timeInHours ?: 0f
+        // CORRECCIÓN 1: Convertimos explícitamente a Float
+        val horasAyer = peorApp?.timeInHours?.toFloat() ?: 0f
         val totalAyer = topApps.sumOf { it.timeInHours.toDouble() }.toFloat()
 
         Card(
@@ -226,7 +233,9 @@ fun HomeScreen(
                     Text("Sin datos aún", color = TextMuted, fontSize = 13.sp,
                         modifier = Modifier.padding(bottom = 8.dp))
                 } else {
-                    val maxHours = topApps.maxOf { it.timeInHours }
+                    // CORRECCIÓN 2: Convertimos maxHours a Float
+                    val maxHours = topApps.maxOf { it.timeInHours.toFloat() }.coerceAtLeast(0.1f)
+
                     topApps.take(3).forEach { app ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -243,6 +252,7 @@ fun HomeScreen(
                                     Text(app.appName, fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold, color = TextMain
                                     )
+                                    // format funciona bien con Double o Float, así que aquí no hay problema
                                     Text("${"%.1f".format(app.timeInHours)}h",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.ExtraBold,
@@ -256,8 +266,9 @@ fun HomeScreen(
                                 ) {
                                     Box(
                                         modifier = Modifier
+                                            // CORRECCIÓN 3: Convertimos app.timeInHours a Float antes de dividir
                                             .fillMaxWidth(
-                                                (app.timeInHours / maxHours)
+                                                (app.timeInHours.toFloat() / maxHours)
                                                     .coerceIn(0f, 1f))
                                             .fillMaxHeight()
                                             .clip(RoundedCornerShape(4.dp))
@@ -271,4 +282,22 @@ fun HomeScreen(
             }
         }
     }
+}
+
+// PREVIEW CORREGIDO
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen(
+        score = 45,
+        levelColor = Color(0xFFF59E0B),
+        levelLabel = "Cuidado 🟡",
+        activeCount = 2,
+        topApps = listOf(
+            AppUsageInfo("com.instagram.android", "Instagram", 2.5f, "Social"),
+            AppUsageInfo("com.zhiliaoapp.musically", "TikTok", 1.8f, "Social")
+        ),
+        isLoading = false,
+        onGoToArmas = {}
+    )
 }

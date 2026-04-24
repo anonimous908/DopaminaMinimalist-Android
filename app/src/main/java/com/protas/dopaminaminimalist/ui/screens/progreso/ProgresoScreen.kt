@@ -10,6 +10,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.protas.dopaminaminimalist.data.datasource.AppUsageInfo
 import com.protas.dopaminaminimalist.ui.theme.*
@@ -30,7 +31,12 @@ fun ProgresoScreen(
     val daysBelowGoal = historyData.count { it < 4f }
     val peorApp = topApps.firstOrNull()?.appName ?: "Sin datos"
 
-    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
         Text("TU HISTORIAL", color = TextMuted, fontSize = 12.sp,
             fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
 
@@ -174,7 +180,7 @@ fun ProgresoScreen(
         val stats = listOf(
             listOf("🏆", "%.1fh".format(bestDay), "Mejor día",
                 Color(0xFF22C55E), Color(0xFFECFDF5), Color(0xFFBBF7D0)),
-            listOf("💀", "%.1fh".format(worstDay), "Peor día",
+            listOf("💀", "%.1fh".format(worstDay), diaMasVicioso.ifEmpty { "Peor día" },
                 Color(0xFFEF4444), Color(0xFFFEF2F2), Color(0xFFFECACA)),
             listOf("🎯", "$daysBelowGoal/7", "Días bajo meta (4h)",
                 Color(0xFF4F46E5), Color(0xFFEEF2FF), Color(0xFFC7D2FE)),
@@ -251,4 +257,20 @@ fun ProgresoScreen(
             }
         }
     }
+}
+
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun ProgresoScreenPreview() {
+    // Datos de prueba (mock data) para forzar que la pantalla renderice en el Preview
+    val mockHistory = listOf(2.5f, 5.0f, 3.2f, 7.1f, 1.5f, 4.0f, 6.5f)
+
+    ProgresoScreen(
+        historyData = mockHistory,
+        promedioSemanal = 4.2f,
+        tendencia = -1.5f,
+        diaMasVicioso = "Jueves",
+        topApps = emptyList() // Pasamos una lista vacía para evitar errores de compilación
+    )
 }

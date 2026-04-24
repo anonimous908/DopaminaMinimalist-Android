@@ -1,6 +1,5 @@
 package com.protas.dopaminaminimalist.ui.navigation
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,11 +23,14 @@ fun BottomNav(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Lista con las 4 pestañas
     val tabs = listOf(
         Triple("home",     "🏠", "Inicio"),
         Triple("armas",    "🛡️", "Retos"),
-        Triple("progreso", "📈", "Progreso")
+        Triple("progreso", "📈", "Progreso"),
+        Triple("settings", "⚙️", "Ajustes") // AÑADIDO
     )
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = CardBg,
